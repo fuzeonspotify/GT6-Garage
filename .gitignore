@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+build/
+dist/
+Support/
+PDIPFS/
+GT.VOL
+EBOOT.BIN
+key.json
+session.json
+settings.json
+*.sqlite
+*.gt6car
+*.log
+*.zip

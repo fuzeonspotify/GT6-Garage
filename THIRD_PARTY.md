@@ -1,0 +1,14 @@
+# Licenses and attribution
+
+The MIT license in the project root covers the original Garage software, its template-building program and its documentation. Each external dependency and input keeps its own license. Gran Turismo and PlayStation are trademarks of their respective owners.
+
+| Component | Terms and source |
+|---|---|
+| GTToolsSharp by Nenkai | MIT. The Windows build includes a modified executable. The exact upstream commit, local patch, build command and checksum are published. [Upstream source](https://github.com/Nenkai/GTToolsSharp/tree/8ad944caf9c1c9c113a070a20bbf668cddc91315) · [Local modification and license texts](third_party/GTToolsSharp) |
+| PDTools by Nenkai | MIT. GTToolsSharp uses the pinned submodule. [Pinned source](https://github.com/Nenkai/PDTools/tree/2a9637d8c36100e4c211d73cd8140a9d690578d2) |
+| .NET runtime and packer libraries | The redistribution includes upstream and transitive notices. Syroot.BinaryData, Core and Memory use the same MIT license. The dependency inventory identifies the versions used by the packaged packer. [Dependency inventory](third_party/GTToolsSharp/Dependencies.txt) · [Syroot package license](https://www.nuget.org/packages/Syroot.BinaryData/5.2.2) |
+| Python, NumPy, Pillow, fast-simplification, PyInstaller and bundled runtime components | Each retains its upstream terms, including the PyInstaller bootloader exception. The Windows distribution carries applicable license texts under **_internal/licenses**, alongside runtime notices collected with the packages. [Python](https://docs.python.org/3/license.html) · [NumPy](https://github.com/numpy/numpy) · [Pillow](https://github.com/python-pillow/Pillow) · [fast-simplification](https://github.com/pyvista/fast-simplification) · [PyInstaller](https://pyinstaller.org/en/stable/license.html) |
+| Sample sedan | Kenney, **Car Kit**, CC0. The copies in the workshop examples and the test fixtures are the same sample. [Original asset and license](https://kenney.nl/assets/car-kit) |
+| 1997 Toyota Supra RZ | OUTPISTON, **CC BY-NC-SA 4.0**. Players obtain the GLB separately if rebuilding the historical reference template. That process adapts its geometry, materials, lights and wheels for GT6. The local builder carries attribution into its outputs. The model and its adapted artwork remain subject to the artist’s noncommercial and share-alike terms. [Original model](https://sketchfab.com/3d-models/1997-toyota-supra-rz-d6ed1376d91e4fd3b8e6fc061065c44f) · [Artist’s license](https://creativecommons.org/licenses/by-nc-sa/4.0/) |
+
+The repository and Windows download contain no GT6 archive, database, native template, save, game executable or historical mod pack. Players supply those inputs from their own installation. The F50, Zonda and other private test models are not distributed. Licensing your own source mesh is a separate choice from using or modifying the Garage software. [Project license](LICENSE)

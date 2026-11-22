@@ -1,0 +1,961 @@
+{
+  "schema": 1,
+  "kind": "read_only_nominal_specification_and_historical_mount_reference",
+  "created_utc": "2026-11-18T07:27:59Z",
+  "status": "Nominal RX8 tyre specification established; actual rendered/loaded tyre envelope and current candidate fit remain unverified.",
+  "no_production_source_or_game_changes": true,
+  "inputs_unchanged": true,
+  "database_provenance": {
+    "original": {
+      "sha256": "d11c7d45ae9042153078f813bb7357d157d2c7b4ad95ae7287919ffc63212ca8",
+      "format": "Decrypted GT6 1.22 SQLite snapshot",
+      "opened": "mode=ro; PRAGMA query_only=ON; PRAGMA trusted_schema=OFF"
+    },
+    "additional_car_snapshot": {
+      "sha256": "e30fba6b12a0c8eda20702026311fd0b520b57fbc706fa41401ef2e783d161cc",
+      "scope": "Existing Cinque additional-entry snapshot; unrelated original RX8 rows were compared to the original decoded database."
+    },
+    "original_and_snapshot_row_equality": {
+      "GENERIC_CAR": true,
+      "DEFAULT_PARTS": true,
+      "CHASSIS": true,
+      "FRONTTIRE": true,
+      "REARTIRE": true,
+      "TIRESIZE": true,
+      "SUSPENSION": true,
+      "WHEEL": true,
+      "WHEEL_SP": true,
+      "MODEL_INFO": true
+    },
+    "hash_before_and_after_equal": true,
+    "source_receipt": {
+      "reported_original_rows_unchanged": true,
+      "independent_original_comparison_performed": true
+    }
+  },
+  "identity": {
+    "car_id": 76,
+    "label": "rx8_tmv_01",
+    "model_code_decimal": 10001,
+    "native_model_path": "car/0001/0001",
+    "default_parts_id": 49668,
+    "chassis_id": 16654,
+    "suspension_id": 116381,
+    "front_tire_part_id": 229251,
+    "rear_tire_part_id": 229250,
+    "front_tire_size_id": 1577,
+    "rear_tire_size_id": 1577
+  },
+  "relevant_rows": {
+    "GENERIC_CAR": {
+      "CarLabel": "rx8_tmv_01",
+      "ModelCode": 10001,
+      "Price": 65000,
+      "SpecifyFlags1": 2432,
+      "PurchaseLevel": 5,
+      "HornID": 35911,
+      "NumColor": 1,
+      "MainColor": 0,
+      "PP": 447,
+      "Power": 284.9553,
+      "CarID": 76,
+      "Year": 2001,
+      "PowerMax": 0,
+      "PowerMin": 5,
+      "ID": 76,
+      "Defaultparts": 49668,
+      "Country": 2,
+      "Maker": 22,
+      "Tuner": 21,
+      "Category": 0,
+      "GeneralFlags": 0,
+      "GeneralFlags2": 2,
+      "GeneralFlags3": 0,
+      "GeneralFlags4": 0,
+      "ConceptcarType": 0,
+      "TestCar": 0,
+      "PartsPrice": 13,
+      "RealSpecHidden": 0,
+      "SuperCharger": 0,
+      "CanChangeDecken": 0,
+      "CanCustomDecken": 0,
+      "CanCustomWindowSticker": 0,
+      "CanCustomNumberPlate_JP": 0,
+      "CanCustomNumberPlate_EU": 0,
+      "CanCaliperPaint": 0,
+      "ArcadeEnemy": 1,
+      "PremiumCar": 0,
+      "Dirt": 1,
+      "OpenCar": 0,
+      "InteriorType": 1,
+      "AircoolCar": 0,
+      "Arcade": 0,
+      "InDealer": 1,
+      "DLC": 0,
+      "PowerRPM": 8500,
+      "Weight": 1200
+    },
+    "DEFAULT_PARTS": {
+      "Label": "df_pt_sim_rx8_tmv_01",
+      "WheelVariation": -1,
+      "ID": 49668,
+      "BRAKE": 12466,
+      "BRAKECONTROLLER": 6600,
+      "SUSPENSION": 116381,
+      "ASCC": 328,
+      "TCSC": 58,
+      "CHASSIS": 16654,
+      "RACINGMODIFY": 15895,
+      "LIGHTWEIGHT": 4294967295,
+      "STEER": 135,
+      "DRIVETRAIN": 15907,
+      "GEAR": 24468,
+      "ENGINE": 29283,
+      "NATUNE": 4294967295,
+      "TURBINEKIT": 11424,
+      "DISPLACEMENT": 4294967295,
+      "COMPUTER": 4294967295,
+      "INTERCOOLER": 4294967295,
+      "MUFFLER": 4294967295,
+      "CLUTCH": 10767,
+      "FLYWHEEL": 4294967295,
+      "PROPELLERSHAFT": 4294967295,
+      "LSD": 34672,
+      "FRONTTIRE": 229251,
+      "REARTIRE": 229250,
+      "FRONTTIRE_G": 10,
+      "REARTIRE_G": 47,
+      "NOS": 4294967295,
+      "WING": 4294967295,
+      "Aero": 4294967295,
+      "FlatFloor": 4294967295,
+      "Freedom": 4294967295,
+      "LightweightWindow": 4294967295,
+      "Bonnet": 4294967295,
+      "IntakeManifold": 4294967295,
+      "ExhaustManifold": 4294967295,
+      "Catalyst": 4294967295,
+      "AirCleaner": 4294967295,
+      "BoostController": 4294967295,
+      "IndepThrottle": 4294967295,
+      "Supercharger": 4294967295
+    },
+    "CHASSIS": [
+      {
+        "Label": "ch_rx8_tmv_01_a",
+        "length": 4425,
+        "height": 1340,
+        "wheelbase": 2700,
+        "mass": 1200,
+        "dlength": 4425,
+        "dheight": 1340,
+        "dmass": 0,
+        "performanceF": 970,
+        "performanceR": 990,
+        "treadF": 1500,
+        "treadR": 1510,
+        "width": 1770,
+        "dwidth": 1770,
+        "original_rideHeight_F": 125,
+        "original_rideHeight_R": 125,
+        "electricMotor": 0,
+        "ID": 16654,
+        "LabelID": 1458,
+        "UseCar": 76,
+        "category": 0,
+        "cartype": 0,
+        "percentageF": 500,
+        "yaw": 2200,
+        "cgheight": 475,
+        "WheelLayout": 0,
+        "GrowInch": 0,
+        "TireWidthRate": 100,
+        "FrontStiffness": 1,
+        "RearStiffness": 1,
+        "GasCapacity": 100,
+        "EngineMount": 0,
+        "cd": 330,
+        "clMINF": 0,
+        "clMAXF": 0,
+        "clDFF": 0,
+        "clMINR": 0,
+        "clMAXR": 0,
+        "clDFR": 0,
+        "wheeloffsetF": 0,
+        "wheeloffsetR": 0,
+        "susarmF": 20,
+        "susarmR": 20,
+        "ActiveWingType": 0,
+        "ActiveWingVelocity1": 0,
+        "ActiveWingVelocity2": 0,
+        "ActiveWingMovingSpeed": 0,
+        "ActiveWingDownForce": 0,
+        "rollCenterPolicy": 0,
+        "downForcePointOfLoadF": 0,
+        "downForcePointOfLoadR": 0,
+        "activeWingVelocity3": 0,
+        "activeWingDownForce2": 0,
+        "original_ClF": 0,
+        "original_ClR": 0,
+        "batteryCapacity": 0
+      }
+    ],
+    "FRONTTIRE": [
+      {
+        "Label": "ft_rx8_tmv_01_05",
+        "ID": 229251,
+        "LabelID": 77041,
+        "UseCar": 76,
+        "category": 5,
+        "tiresize": 1577,
+        "tirecompound0": 3893,
+        "tirecompound1": 3925,
+        "tirecompound2": 3893,
+        "tireforcevol0": 25,
+        "tireforcevol1": 25,
+        "tireforcevol2": 36,
+        "tireDrainageLevel": 0,
+        "tireSpring_Auto": 0
+      }
+    ],
+    "REARTIRE": [
+      {
+        "Label": "rt_rx8_tmv_01_05",
+        "ID": 229250,
+        "LabelID": 77033,
+        "UseCar": 76,
+        "category": 5,
+        "tiresize": 1577,
+        "tirecompound0": 3893,
+        "tirecompound1": 3925,
+        "tirecompound2": 3893,
+        "tireforcevol0": 25,
+        "tireforcevol1": 25,
+        "tireforcevol2": 36,
+        "tireDrainageLevel": 0,
+        "tireSpring_Auto": 0
+      }
+    ],
+    "TIRESIZE": {
+      "FRONTTIRE": [
+        {
+          "Label": "sz126",
+          "flatness": 9,
+          "ID": 1577,
+          "LabelID": 690,
+          "diameter": 180,
+          "width": 45
+        }
+      ],
+      "REARTIRE": [
+        {
+          "Label": "sz126",
+          "flatness": 9,
+          "ID": 1577,
+          "LabelID": 690,
+          "diameter": 180,
+          "width": 45
+        }
+      ]
+    },
+    "SUSPENSION": [
+      {
+        "Label": "su_rx8_tmv_01_a",
+        "rideheightMINF": 125,
+        "rideheightMAXF": 125,
+        "rideheightDFF": 125,
+        "rideheightMINR": 125,
+        "rideheightMAXR": 125,
+        "rideheightDFR": 125,
+        "targetFrequencyFMin": 0,
+        "targetFrequencyFMax": 0,
+        "targetFrequencyFDF": 0,
+        "targetFrequencyRMin": 0,
+        "targetFrequencyRMax": 0,
+        "targetFrequencyRDF": 0,
+        "ID": 116381,
+        "LabelID": 3766,
+        "UseCar": 76,
+        "category": 0,
+        "camberMINF": 5,
+        "camberMAXF": 5,
+        "camberDFF": 5,
+        "camberMINR": 15,
+        "camberMAXR": 15,
+        "camberDFR": 15,
+        "strokecamberF": 0,
+        "strokecamberR": 0,
+        "cmbgripFx1": 0,
+        "cmbgripFx2": 128,
+        "cmbgripFx3": 162,
+        "cmbgripFx4": 255,
+        "cmbgripFy1": 160,
+        "cmbgripFy2": 200,
+        "cmbgripFy3": 199,
+        "cmbgripFy4": 164,
+        "cmbgripRx1": 0,
+        "cmbgripRx2": 128,
+        "cmbgripRx3": 162,
+        "cmbgripRx4": 255,
+        "cmbgripRy1": 160,
+        "cmbgripRy2": 200,
+        "cmbgripRy3": 199,
+        "cmbgripRy4": 164,
+        "toeMINF": 0,
+        "toeMAXF": 0,
+        "toeDFF": 0,
+        "toeMINR": 60,
+        "toeMAXR": 60,
+        "toeDFR": 60,
+        "brmarginF": 20,
+        "brmarginR": 20,
+        "brtouchF": 40,
+        "brtouchR": 40,
+        "limrF": 130,
+        "limrR": 130,
+        "springratevol": 0,
+        "springrateMINF": 384,
+        "springrateMAXF": 384,
+        "springrateDFF": 384,
+        "springrateMINR": 407,
+        "springrateMAXR": 407,
+        "springrateDFR": 407,
+        "leverratioDFF": 750,
+        "leverratioDFR": 780,
+        "bumprubberF": 36,
+        "bumprubberR": 28,
+        "bumprubberDMF": 50,
+        "bumprubberDMR": 50,
+        "dampV1BF": 30,
+        "dampV1BR": 30,
+        "dampV2BF": 70,
+        "dampV2BR": 70,
+        "dampV1RF": 30,
+        "dampV1RR": 30,
+        "dampV2RF": 70,
+        "dampV2RR": 70,
+        "damplevelBF": 1,
+        "dampF1BMINF": 1571,
+        "dampF1BMAXF": 1571,
+        "dampF1BDFF": 1,
+        "dampF2BMINF": 3142,
+        "dampF2BMAXF": 3142,
+        "dampF2BDFF": 1,
+        "damplevelRF": 1,
+        "dampF1RMINF": 2357,
+        "dampF1RMAXF": 2357,
+        "dampF1RDFF": 1,
+        "dampF2RMINF": 4713,
+        "dampF2RMAXF": 4713,
+        "dampF2RDFF": 1,
+        "damplevelBR": 1,
+        "dampF1BMINR": 1556,
+        "dampF1BMAXR": 1556,
+        "dampF1BDFR": 1,
+        "dampF2BMINR": 3113,
+        "dampF2BMAXR": 3113,
+        "dampF2BDFR": 1,
+        "damplevelRR": 1,
+        "dampF1RMINR": 2335,
+        "dampF1RMAXR": 2335,
+        "dampF1RDFR": 1,
+        "dampF2RMINR": 4669,
+        "dampF2RMAXR": 4669,
+        "dampF2RDFR": 1,
+        "unsprungmassF": 4400,
+        "unsprungmassR": 4400,
+        "stabilizerFlevel": 1,
+        "stabilizerMINF": 95,
+        "stabilizerMAXF": 95,
+        "stabilizerDFF": 1,
+        "stabilizerRlevel": 1,
+        "stabilizerMINR": 62,
+        "stabilizerMAXR": 62,
+        "stabilizerDFR": 1,
+        "ActiveSuspensionType": 0,
+        "springratelevelF": 0,
+        "springratelevelR": 0,
+        "rideheightlevelF": 0,
+        "rideheightlevelR": 0,
+        "AutoDampingForce": 0,
+        "DampingRatioFBLevel": 0,
+        "DampingRatioFBDF": 0,
+        "DampingRatioFBMin": 0,
+        "DampingRatioFBMax": 0,
+        "DampingRatioFRLevel": 0,
+        "DampingRatioFRDF": 0,
+        "DampingRatioFRMin": 0,
+        "DampingRatioFRMax": 0,
+        "DampingRatioRBLevel": 0,
+        "DampingRatioRBDF": 0,
+        "DampingRatioRBMin": 0,
+        "DampingRatioRBMax": 0,
+        "DampingRatioRRLevel": 0,
+        "DampingRatioRRDF": 0,
+        "DampingRatioRRMin": 0,
+        "DampingRatioRRMax": 0,
+        "caster": 100,
+        "targetFrequencyFLv": 0,
+        "targetFrequencyRLv": 0
+      }
+    ],
+    "MODEL_INFO": [
+      {
+        "ModelCode": 10001,
+        "ModelWidth": 1779.131,
+        "ModelHeight": 1167.264,
+        "ModelFront": 2198.394,
+        "ModelRear": 2237.256,
+        "ModelProjection": 1.855347,
+        "DriverModel": "o001",
+        "HelmetModel": "f001",
+        "LeftBeltModel": "b003",
+        "RightBeltModel": "b003",
+        "LeftBeltModelHigh": "b003",
+        "RightBeltModelHigh": "b003",
+        "FrontStrokeMargin": 1000,
+        "RearStrokeMargin": 1000,
+        "BeltTexture": 0,
+        "ID": 1,
+        "CarCode": 76,
+        "DriverType": 1,
+        "Steering": 0,
+        "Crew": 2,
+        "LeftSeatBeltType": 3,
+        "RightSeatBeltType": 3
+      }
+    ],
+    "WHEEL": [
+      {
+        "Label": "rx8_tmv_01",
+        "ModelCode": 10001,
+        "FrontDiameter": 180,
+        "FrontAspect": 45,
+        "FrontWidth": 225,
+        "RearDiameter": 180,
+        "RearAspect": 45,
+        "RearWidth": 225,
+        "FrontTireDiameter": 0,
+        "RearTireDiameter": 0,
+        "FrontMaxDiameter": 0,
+        "RearMaxDiameter": 0,
+        "FrontMinDiameter": 180,
+        "RearMinDiameter": 180,
+        "FrontTireType": 0,
+        "RearTireType": 0,
+        "FrontExchangeable": 0,
+        "RearExchangeable": 0,
+        "FrontDiameterMM": 0,
+        "RearDiameterMM": 0,
+        "LabelID": 76,
+        "CarCode": 76,
+        "WheelType": 1
+      }
+    ],
+    "WHEEL_SP": [
+      {
+        "WheelExID": 33,
+        "ModelCode": 10001,
+        "FrontDiameter": 150,
+        "FrontAspect": 65,
+        "FrontWidth": 205,
+        "RearDiameter": 150,
+        "RearAspect": 65,
+        "RearWidth": 205,
+        "FrontTireDiameter": 0,
+        "RearTireDiameter": 0,
+        "ID": 582,
+        "FrontTireType": 0,
+        "RearTireType": 0,
+        "FrontDiameterMM": 0,
+        "RearDiameterMM": 0,
+        "CarCode": 76,
+        "WheelType": 2
+      },
+      {
+        "WheelExID": 15,
+        "ModelCode": 10001,
+        "FrontDiameter": 150,
+        "FrontAspect": 65,
+        "FrontWidth": 205,
+        "RearDiameter": 150,
+        "RearAspect": 65,
+        "RearWidth": 205,
+        "FrontTireDiameter": 0,
+        "RearTireDiameter": 0,
+        "ID": 1255,
+        "FrontTireType": 0,
+        "RearTireType": 0,
+        "FrontDiameterMM": 0,
+        "RearDiameterMM": 0,
+        "CarCode": 76,
+        "WheelType": 4
+      }
+    ]
+  },
+  "primary_sources": [
+    {
+      "url": "https://nenkai.github.io/gt-modding-hub/concepts/specdb/#tiresize",
+      "retrieved_utc_date": "2026-11-18",
+      "authority": "Format research and table documentation maintained by the PDTools author",
+      "supports": "TIRESIZE diameter divided by ten gives rim inches; width multiplied by five gives millimetres. The documented flatness example maps 12 to a 60-percent profile. DEFAULT_PARTS links the selected front/rear tyre records to their size record.",
+      "compatibility_note": "The displayed example is GT4. Its dimensional representation was checked against this actual GT6 schema and RX8 WHEEL row; it is not assumed to make every GT6 visual wheel agree with every physical tyre row."
+    },
+    {
+      "url": "https://nenkai.github.io/gt-modding-hub/ps3/specdb/",
+      "retrieved_utc_date": "2026-11-18",
+      "supports": "GT6 uses an encrypted SQLite SpecDB; this inspection used an existing decrypted copy."
+    }
+  ],
+  "decoded_nominal_specification": {
+    "raw_tiresize": {
+      "diameter": 180,
+      "width": 45,
+      "flatness": 9
+    },
+    "units": {
+      "rim_diameter_inches": "TIRESIZE.diameter / 10",
+      "section_width_millimetres": "TIRESIZE.width * 5",
+      "aspect_percent": "TIRESIZE.flatness * 5"
+    },
+    "front": {
+      "notation": "225/45R18",
+      "section_width_metres": 0.225,
+      "rim_diameter_inches": 18,
+      "aspect_percent": 45,
+      "nominal_outer_radius_metres": 0.32985
+    },
+    "rear": {
+      "notation": "225/45R18",
+      "section_width_metres": 0.225,
+      "rim_diameter_inches": 18,
+      "aspect_percent": 45,
+      "nominal_outer_radius_metres": 0.32985
+    },
+    "nominal_radius_formula": "(rim_diameter_inches * 0.0254 + 2 * section_width_metres * aspect_percent / 100) / 2",
+    "visual_WHEEL_row_agrees_with_default_physical_TIRESIZE": true,
+    "nominal_chassis": {
+      "wheelbase_metres": 2.7,
+      "front_track_metres": 1.5,
+      "rear_track_metres": 1.51
+    },
+    "actual_rendered_tyre_radius_metres": null,
+    "loaded_contact_radius_metres": null,
+    "actual_rendered_tyre_width_metres": null,
+    "ground_plane_in_captured_body_coordinates": null,
+    "warning": "Nominal dimensions are specification evidence, not a measured loaded tyre, generated mesh, contact patch, floor, suspension height, or clearance. No source mesh scale or physics value was applied.",
+    "current_wheel_lab_null_field_interpretation": "The lab receipt's physical_tyre_dimensions:null and fit-unverified flags refer to its unverified physical fit/rendered tyre contract. They do not mean that the database has no available nominal tyre specification."
+  },
+  "cross_row_consistency_check": {
+    "database": "original",
+    "scope": "Front default-tyre rows joined through GENERIC_CAR -> DEFAULT_PARTS -> FRONTTIRE -> TIRESIZE and WHEEL by CarCode; joined rows, not a full-car census or an audit of every upgrade or driving mode.",
+    "query": "SELECT g.ID,g.CarLabel,w.FrontWidth,w.FrontAspect,w.FrontDiameter,t.width,t.flatness,t.diameter FROM GENERIC_CAR g JOIN DEFAULT_PARTS d ON d.ID=g.Defaultparts JOIN FRONTTIRE f ON f.ID=d.FRONTTIRE JOIN TIRESIZE t ON t.ID=f.tiresize JOIN WHEEL w ON w.CarCode=g.ID",
+    "match_condition": "FrontWidth == width * 5 AND FrontAspect == flatness * 5 AND FrontDiameter == diameter",
+    "total_joined_rows": 1038,
+    "matching_rows": 972,
+    "rows_disagreeing_in_at_least_one_field": 66,
+    "examples_first_six": [
+      {
+        "ID": 1405,
+        "CarLabel": "_307cc_premium_avn_04",
+        "FrontWidth": 205,
+        "FrontAspect": 55,
+        "FrontDiameter": 150,
+        "width": 41,
+        "flatness": 11,
+        "diameter": 160
+      },
+      {
+        "ID": 296,
+        "CarLabel": "_787b_91",
+        "FrontWidth": 300,
+        "FrontAspect": 0,
+        "FrontDiameter": 180,
+        "width": 60,
+        "flatness": 6,
+        "diameter": 180
+      },
+      {
+        "ID": 1587,
+        "CarLabel": "_787b_91_cf",
+        "FrontWidth": 300,
+        "FrontAspect": 0,
+        "FrontDiameter": 180,
+        "width": 60,
+        "flatness": 6,
+        "diameter": 180
+      },
+      {
+        "ID": 1725,
+        "CarLabel": "_908_hdi_fap_oreca_10",
+        "FrontWidth": 330,
+        "FrontAspect": 0,
+        "FrontDiameter": 180,
+        "width": 66,
+        "flatness": 7,
+        "diameter": 180
+      },
+      {
+        "ID": 1679,
+        "CarLabel": "acura_nsx_91_rm",
+        "FrontWidth": 225,
+        "FrontAspect": 40,
+        "FrontDiameter": 170,
+        "width": 41,
+        "flatness": 10,
+        "diameter": 150
+      },
+      {
+        "ID": 1514,
+        "CarLabel": "amemiya_aspara_rx7_06",
+        "FrontWidth": 280,
+        "FrontAspect": 0,
+        "FrontDiameter": 180,
+        "width": 56,
+        "flatness": 9,
+        "diameter": 180
+      }
+    ],
+    "implication": "A reusable importer must retain separate visual WHEEL/WHEEL_SP and selected physical tyre records. Do not silently replace one with the other or assume this RX8 agreement is universal.",
+    "mismatch_causes_not_diagnosed": true
+  },
+  "historical_mount_evidence": {
+    "report": "reports/vertex_encoding/native_wheel_v002_capture_binding.json",
+    "report_sha256": "27b3352509ef8f631a8a64c5dbe4a293d7e4db9535c5b2cfdc39ed065730c7f2",
+    "capture_sha256": "5a750f59e2ae91ef279617ee77439ad679021768d2ea1b17a69ae58bda0eaa21",
+    "current_lab_audit": "f50_wheel_mount_audit.json",
+    "current_lab_audit_sha256": "db9b3898e18abf0e287402d5085ee5ff07f1d9e5477786ee2133a3878f11f305",
+    "origin_inference": "The captured outer wheel origins are consistent with a native outer tyre-face datum: apply the captured rigid matrix to local [0.225 / 2, 0, 0] to reach the nominal track centre. This is an explicit inference corroborated by all four captured corner matrices and the original SpecDB.",
+    "calculation": "center_body = reference_mount_rotation @ [0.1125, 0, 0] + reference_mount_translation",
+    "comparison_datum": {
+      "FL": [
+        -0.75,
+        0.1985,
+        -1.35
+      ],
+      "FR": [
+        0.75,
+        0.1985,
+        -1.35
+      ],
+      "RL": [
+        -0.755,
+        0.1985,
+        1.35
+      ],
+      "RR": [
+        0.755,
+        0.1985,
+        1.35
+      ]
+    },
+    "largest_absolute_component_difference_metres": 4.843915157870526e-07,
+    "accuracy_limit": "Sub-micrometre numerical agreement checks the captured float32 transforms against the nominal layout; it is not a claim of physical measurement accuracy.",
+    "Y_datum_scope": "0.1985 m is the reconstructed centre height in this historical body-relative pose. Its relationship to tyre loading, ground, dynamic suspension and general ride height remains unproven.",
+    "corners": [
+      {
+        "corner": "FL",
+        "source_center_metres": [
+          -0.8347450494766235,
+          0.331118643283844,
+          -1.2991852760314941
+        ],
+        "source_radius_metres": 0.331118643283844,
+        "source_width_metres": 0.23586726188659668,
+        "captured_reference_at_half_nominal_width": [
+          -0.7500004843915158,
+          0.19850007762060498,
+          -1.3500002512879388
+        ],
+        "nominal_reference_difference_metres": [
+          -4.843915157870526e-07,
+          7.762060497129575e-08,
+          -2.5128793867956745e-07
+        ],
+        "current_lab_axial_offset_metres": 0.027752213347684695
+      },
+      {
+        "corner": "FR",
+        "source_center_metres": [
+          0.8347450494766235,
+          0.331118643283844,
+          -1.2991852760314941
+        ],
+        "source_radius_metres": 0.331118643283844,
+        "source_width_metres": 0.23586726188659668,
+        "captured_reference_at_half_nominal_width": [
+          0.7500000705470838,
+          0.19850007536881517,
+          -1.349999918588663
+        ],
+        "nominal_reference_difference_metres": [
+          7.054708384135466e-08,
+          7.536881516112537e-08,
+          8.141133700512171e-08
+        ],
+        "current_lab_axial_offset_metres": 0.027751796491182566
+      },
+      {
+        "corner": "RL",
+        "source_center_metres": [
+          -0.8317311406135559,
+          0.3492395877838135,
+          1.2991852760314941
+        ],
+        "source_radius_metres": 0.34923332929611206,
+        "source_width_metres": 0.32511258125305176,
+        "captured_reference_at_half_nominal_width": [
+          -0.7550000935424686,
+          0.19850003298755958,
+          1.3499996704074775
+        ],
+        "nominal_reference_difference_metres": [
+          -9.354246854886838e-08,
+          3.298755957281685e-08,
+          -3.29592522607669e-07
+        ],
+        "current_lab_axial_offset_metres": 0.03573845936269806
+      },
+      {
+        "corner": "RR",
+        "source_center_metres": [
+          0.8317311406135559,
+          0.3492395877838135,
+          1.2991852760314941
+        ],
+        "source_radius_metres": 0.34923332929611206,
+        "source_width_metres": 0.32511258125305176,
+        "captured_reference_at_half_nominal_width": [
+          0.7550004439072071,
+          0.19850003109708253,
+          1.3500002976763092
+        ],
+        "nominal_reference_difference_metres": [
+          4.4390720710385523e-07,
+          3.109708252013732e-08,
+          2.9767630915777943e-07
+        ],
+        "current_lab_axial_offset_metres": 0.03573880180244326
+      }
+    ],
+    "asset_evidence": {
+      "native_wheel_models": "The original HQ wheel models have only their context-specific draw calls and End, no per-corner translation commands; all model VM entry pointers are -1.",
+      "native_hq_wheel_sha256": "dcf5dd04d08654f946a6683a8495e9218103263b0b302dce21f6eb3b2b0e7f9c",
+      "native_race_wheel_sha256": "a76bea101ab8674f877e5bb4f024cbd082523f67b2d8f0413aa47386a6fa983d",
+      "native_wheel_bone_count": 0,
+      "native_wheel_register_count": 0,
+      "native_wheel_vm_bytecode_bytes": 4,
+      "native_wheel_vm_bytecode_sha256": "832738cfb732ac79a2aab685d562cca383667e674a93834c8766451d4b64c6cd",
+      "verified_actual_header_offsets": {
+        "bytecode_size": "0x60",
+        "bytecode_pointer": "0x64"
+      },
+      "no_verified_visual_only_pre_spin_mount_YZ_field": true,
+      "model_origins_are_local_bounds_midpoints_not_measured_vehicle_mounts": true
+    }
+  },
+  "historical_dynamic_evidence": {
+    "report": "reports/vertex_encoding/native_rotor_geometry_spin_evidence_v001.json",
+    "report_sha256": "aa102131ad881228e1805bcbdbcf87d4883151567062346880c75826b570524c",
+    "garage_capture_sha256": "efe1431203fd772aa8b530ea43f07463ecde3a3d27e24d32255fef202dbf68e8",
+    "free_run_capture_sha256": "8b995bf55b28e246ca8fdb7b920dd6e9cc3f23551b1ac713ae7295b801f0ec72",
+    "verified_position_route": "Captured vertex instructions multiply vertex position by C4-C6, which include the current corner pose.",
+    "finding": "Between the two historical poses, native rotors rotate relative to calipers and follow wheel phase. Their local X axes remain the rotation axes.",
+    "disc_signed_X_rotation_change_relative_to_caliper_degrees": {
+      "FL": 74.51880171454972,
+      "FR": -166.9243160020855,
+      "RL": 11.106444869264905,
+      "RR": 167.106200911279
+    },
+    "implication": "Retain separate spinning wheel/rotor and non-spinning caliper routes. A fixed local Y/Z vertex translation rotates with the wheel and does not establish a vehicle-space mount correction.",
+    "limitations": [
+      "Two historical frames do not prove continuous animation, full steering/compression travel, the current candidate, or every HQ/race state.",
+      "The engine-side matrix construction and a visual-only pre-spin mounting edit remain untraced."
+    ]
+  },
+  "rigid_fit_analysis_no_changes": {
+    "source_centres_from": "Current actual-byte audit, source_center_in_native_body_frame; source forward/up conversion and mean-X/Z recentering already applied.",
+    "target_centres_from": "The four nominal track/wheelbase datums corroborated by the historical mount inference above.",
+    "method": "Proper orthogonal least-squares rotation (SVD), determinant +1, plus translation; no scale.",
+    "rotation": [
+      [
+        1,
+        3.2490795239911717e-20,
+        -5.752238333675998e-18
+      ],
+      [
+        -7.2604936715998e-20,
+        0.9999756827952205,
+        -0.00697379510973295
+      ],
+      [
+        5.7518718711695424e-18,
+        0.006973795109733061,
+        0.9999756827952205
+      ]
+    ],
+    "translation_metres": [
+      -1.10526899877039e-20,
+      -0.14167084332861457,
+      -0.002372339452343133
+    ],
+    "source_wheelbase_metres": 2.5983705520629883,
+    "native_nominal_wheelbase_metres": 2.7,
+    "source_front_track_metres": 1.669490098953247,
+    "source_rear_track_metres": 1.6634622812271118,
+    "native_nominal_front_track_metres": 1.5,
+    "native_nominal_rear_track_metres": 1.51,
+    "residuals_metres": {
+      "FL": [
+        -0.08474504947662354,
+        -1.1102230246251565e-16,
+        0.050783130645840835
+      ],
+      "FR": [
+        0.08474504947662354,
+        -1.1102230246251565e-16,
+        0.050783130645840835
+      ],
+      "RL": [
+        -0.0767311406135559,
+        1.6653345369377348e-16,
+        -0.050783130645840835
+      ],
+      "RR": [
+        0.0767311406135559,
+        1.6653345369377348e-16,
+        -0.050783130645840835
+      ]
+    },
+    "maximum_corner_distance_metres": 0.09879600077426165,
+    "interpretation": "A rigid body fit can remove mean height/pitch mismatch, but cannot align both the different wheelbases and tracks. A complete fit preserving the selected RX8 physics requires an explicit geometry adaptation or a different compatible target; a separate newly authored physics configuration is a different option requiring its own review.",
+    "transform_applied": false,
+    "physics_changed": false
+  },
+  "next_safe_integration_step": [
+    "Create a read-only target-geometry contract resolved from the selected car and installed/default part IDs. Preserve nominal physical TIRESIZE and visual WHEEL/WHEEL_SP separately, with hashes, row IDs and disagreement status.",
+    "Feed the same reviewed body-to-axle frame into body and all wheel/mechanical components. Produce a lab fit comparison with source geometry, inferred target centres and per-corner residuals; do not hide the 50.8 mm longitudinal and 76.7-84.7 mm lateral mismatch in spinning local offsets.",
+    "For replacement mode, preserve all selected target physics rows. Full alignment requires a deliberate geometry-fit policy and visual review or a compatible chassis; the measured rigid transform alone does not solve the mismatch.",
+    "Before implementing a Y/Z mount edit, trace the native engine/captured pre-spin matrix route and verify it across controlled steering and suspension poses. Do not repurpose model origins, CAR5 tyre settings or guessed VM operands.",
+    "Keep new-slot physics authoring separate from replacement. Do not silently alter CHASSIS, tyre or SUSPENSION rows to make geometry appear aligned."
+  ],
+  "reproducibility": {
+    "tool": "Python -B on the authorized PC; sqlite3 mode=ro with query_only and trusted_schema disabled; no game process, capture or input used.",
+    "row_queries": [
+      [
+        "GENERIC_CAR",
+        "ID",
+        76
+      ],
+      [
+        "DEFAULT_PARTS",
+        "ID",
+        49668
+      ],
+      [
+        "CHASSIS",
+        "ID",
+        16654
+      ],
+      [
+        "FRONTTIRE",
+        "ID",
+        229251
+      ],
+      [
+        "REARTIRE",
+        "ID",
+        229250
+      ],
+      [
+        "TIRESIZE",
+        "ID",
+        1577
+      ],
+      [
+        "SUSPENSION",
+        "ID",
+        116381
+      ],
+      [
+        "WHEEL",
+        "CarCode",
+        76
+      ],
+      [
+        "WHEEL_SP",
+        "CarCode",
+        76
+      ],
+      [
+        "MODEL_INFO",
+        "CarCode",
+        76
+      ]
+    ],
+    "comparison_procedure": "Open both exact paths read-only; SELECT * FROM each named table WHERE the named key=? for the supplied ID, compare complete rows, then rehash both files. Resolve IDs through GENERIC_CAR.Defaultparts -> DEFAULT_PARTS in reusable code, rather than hard-coding this receipt's RX8 IDs.",
+    "relevant_schema": {
+      "GENERIC_CAR": [
+        "ID",
+        "CarID",
+        "CarLabel",
+        "ModelCode",
+        "Defaultparts"
+      ],
+      "DEFAULT_PARTS": [
+        "ID",
+        "CHASSIS",
+        "SUSPENSION",
+        "FRONTTIRE",
+        "REARTIRE"
+      ],
+      "FRONTTIRE": [
+        "ID",
+        "UseCar",
+        "category",
+        "tiresize"
+      ],
+      "REARTIRE": [
+        "ID",
+        "UseCar",
+        "category",
+        "tiresize"
+      ],
+      "TIRESIZE": [
+        "ID",
+        "Label",
+        "flatness",
+        "diameter",
+        "width"
+      ],
+      "WHEEL": [
+        "CarCode",
+        "ModelCode",
+        "FrontDiameter",
+        "FrontAspect",
+        "FrontWidth",
+        "RearDiameter",
+        "RearAspect",
+        "RearWidth",
+        "FrontTireDiameter",
+        "RearTireDiameter",
+        "WheelType"
+      ],
+      "CHASSIS": [
+        "ID",
+        "UseCar",
+        "wheelbase",
+        "treadF",
+        "treadR",
+        "original_rideHeight_F",
+        "original_rideHeight_R",
+        "wheeloffsetF",
+        "wheeloffsetR"
+      ]
+    },
+    "rigid_fit_pseudocode": "S=source centres; T=target centres; cs=mean(S); ct=mean(T); U,s,Vt=svd((S-cs).T@(T-ct)); R=Vt.T@U.T; require det(R)>0; t=ct-R@cs; residual=S@R.T+t-T."
+  },
+  "current_candidate_runtime_verified": false,
+  "complete_native_car_accepted": false,
+  "installable": false
+}

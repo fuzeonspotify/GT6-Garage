@@ -1,0 +1,47 @@
+diff --git a/GTToolsSharp/BTree/PFSBTree.cs b/GTToolsSharp/BTree/PFSBTree.cs
+index 207892a..300cf1d 100644
+--- a/GTToolsSharp/BTree/PFSBTree.cs
++++ b/GTToolsSharp/BTree/PFSBTree.cs
+@@ -245,31 +245,17 @@ public class PFSBTree
+             }
+         }
+ 
+-        // Find the original entry key, copy from it, add to the tree
+-        foreach (FileEntryBTree tree in EntriesPerFolder)
+-        {
+-            foreach (FileEntryKey child in tree.Entries)
+-            {
+-                if (child.EntryIndex == infoKey.FileIndex) // If the entry key exists, add it
+-                {
+-                    var fileInfo = new FileInfoKey(newKeyIndex);
+-                    fileInfo.CompressedSize = infoKey.CompressedSize;
+-                    fileInfo.UncompressedSize = infoKey.UncompressedSize;
+-                    fileInfo.SectorOffset = NextSectorIndex(); // Pushed to the end, so technically the sector is new, will be readjusted at the end anyway
+-                    fileInfo.Flags = infoKey.Flags;
+-                    FileInfos.Entries.Add(fileInfo);
+-                    return fileInfo;
+-                }
+-            }
+-        }
+-
+-        // If it wasn't found, then we already have it
+-        infoKey.FileIndex = newKeyIndex;
+-
+-        // Move it to the last
+-        FileInfos.Entries.Remove(infoKey);
+-        FileInfos.Entries.Add(infoKey);
+-        return infoKey;
++        // Preserve every original FileInfoKey and its base-volume sector range.
++        // A sparse replacement must always append, even if the original has no
++        // remaining directory aliases. Otherwise resizing it shifts unrelated
++        // base-volume entries without rewriting the immutable base volume.
++        var fileInfo = new FileInfoKey(newKeyIndex);
++        fileInfo.CompressedSize = infoKey.CompressedSize;
++        fileInfo.UncompressedSize = infoKey.UncompressedSize;
++        fileInfo.SectorOffset = NextSectorIndex();
++        fileInfo.Flags = infoKey.Flags;
++        FileInfos.Entries.Add(fileInfo);
++        return fileInfo;
+     }
+ 
+     public bool TryCheckAndFixInvalidPageIndices()
