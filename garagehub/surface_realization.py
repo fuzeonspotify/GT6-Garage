@@ -19,6 +19,7 @@ import numpy as np
 
 from .car_profiles import ASSETS, PROFILE
 from .errors import GarageError
+from .material_help import BODY_DETAIL, OPTICS, REIMPORT, alpha_steps, material_error
 from .native import MDL3
 from .util import sha256
 
@@ -105,23 +106,34 @@ def opaque_two_sided_plan(scene, inspection):
             continue
         _need(material.get('double_sided') is True,
               'The source two-sided setting must be a Boolean.')
-        _need(role in OPAQUE_ROLES,
-              'Two-sided conversion supports opaque Body detail, Paint and Interior surfaces; '
-              'glass and functional lamp surfaces need a separate native recipe.')
+        if role not in OPAQUE_ROLES:
+            raise material_error(scene, part.material, part.id, 'shell_surface_realization',
+                                 'needs a GT6 glass or lamp material to draw this two-sided lens.', [OPTICS])
         transmission = material.get('transmission', 0.)
-        _need(isinstance(transmission, (int, float)) and not isinstance(transmission, bool)
-              and math.isfinite(transmission) and transmission == 0.
-              and material.get('alpha_mode') == 'OPAQUE',
-              'Two-sided transparent, cutout or transmissive surfaces need a separate native recipe.')
+        if not (isinstance(transmission, (int, float)) and not isinstance(transmission, bool)
+                and math.isfinite(transmission) and transmission == 0. and material.get('alpha_mode') == 'OPAQUE'):
+            effect = {'BLEND': 'transparency', 'MASK': 'cutout transparency'}.get(material.get('alpha_mode'), 'light transmission')
+            label = {'body': 'Body detail', 'paint': 'Paint', 'interior': 'Interior'}[role]
+            raise material_error(scene, part.material, part.id, 'shell_surface_realization',
+                                 f'uses {effect} on a two-sided surface assigned to {label}.',
+                                 alpha_steps(material, role), check_alpha=True)
         use_native_lighting = mapping[part.id].get('use_native_finish') is True
         originals=getattr(scene,'document',{}).get('materials',[]) if use_native_lighting else []
         replaced=native_finish_substitutions(originals[part.material]) if part.material<len(originals) else []
-        _need(not material.get('normal_map') or 'normalTexture' in replaced,
-              'Two-sided normal-mapped surfaces need a tangent-aware native recipe.')
-        _need(use_native_lighting or not any(material.get('emissive', (0., 0., 0.))),
-              'Two-sided emissive surfaces need a separately reviewed native recipe.')
-        _need(role != 'paint' or material.get('base_texture') is None,
-              'Textured Paint needs a native paint-texture recipe.')
+        if material.get('normal_map') and 'normalTexture' not in replaced:
+            raise material_error(scene, part.material, part.id, 'shell_surface_realization',
+                                 'uses a normal map on a two-sided surface.',
+                                 ['In Garage, click Check wheel fit and review the proposed GT6 surface finish. '
+                                  'Choose Apply to preview if you want that finish. If no finish is offered, '
+                                  'disconnect the Normal input on a copy of this material in Blender.', REIMPORT])
+        if not use_native_lighting and any(material.get('emissive', (0., 0., 0.))):
+            raise material_error(scene, part.material, part.id, 'shell_surface_realization',
+                                 'has a glow on a two-sided surface.',
+                                 [OPTICS, 'For solid bodywork, review the proposed GT6 finish under Check wheel fit. '
+                                  'If you edit the material in Blender, set Emission Strength to 0 on the export copy.', REIMPORT])
+        if role == 'paint' and material.get('base_texture') is not None:
+            raise material_error(scene, part.material, part.id, 'shell_surface_realization',
+                                 'has a colour texture on panels assigned to factory Paint.', [BODY_DETAIL])
         # Mirror the existing opaque native recipe selection, including its
         # earlier uniform-palette branch, without changing that production code.
         if role == 'paint':

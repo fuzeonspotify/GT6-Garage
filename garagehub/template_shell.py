@@ -25,6 +25,7 @@ import numpy as np
 
 from .car_profiles import PROFILE, ASSETS, validate_template
 from .errors import GarageError
+from .material_help import BODY_DETAIL, OPTICS, REIMPORT, alpha_steps, finish_steps, material_error
 from .stock_race_wheel import restore_stock_race_wheel, restore_stock_showroom_wheel
 from .glb import GLB, Scene, Part
 from .install_targets import installation, selection_actions
@@ -342,40 +343,46 @@ def _materials(scene, coverage):
         extensions = source.get('extensions', {})
         unsupported_extensions = set(extensions)-{'KHR_materials_transmission'}-replaced
         if unsupported or unsupported_extensions:
-            labels = unsupported+list(unsupported_extensions)
-            _fail('Source material features have no implemented native transfer: '
-                  +', '.join(sorted(labels))+'.', 'shell_material')
+            features = sorted(set(unsupported) | unsupported_extensions)
+            raise material_error(scene, row['material'], row['id'], 'shell_material',
+                                 'uses effects this GT6 material cannot carry ('+', '.join(features)+').',
+                                 finish_steps(features))
         if 'KHR_materials_transmission' in extensions:
             transmission = extensions['KHR_materials_transmission']
             if (not isinstance(transmission, Mapping)
                     or set(transmission)-{'transmissionFactor'} or row['role'] != 'glass'):
-                _fail('Only scalar transmission on explicitly reviewed Glass surfaces has a native '
-                      'optical-family approximation; transmission textures and other source roles are unsupported.',
-                      'shell_material')
+                raise material_error(scene, row['material'], row['id'], 'shell_material',
+                                     'uses a transmission setting that GT6 glass cannot reproduce.',
+                                     ['For window glass, use one Transmission Weight value in Blender and '
+                                      'disconnect any texture from that input. For solid panels, set Weight to 0.',
+                                      REIMPORT, OPTICS])
         if (row['role'] not in ('headlight', 'taillight', 'brakelight')
                 and 'emissiveFactor' not in replaced
                 and any(float(v) != 0. for v in source.get('emissiveFactor', [0., 0., 0.]))):
-            _fail('Unswitched emissive body materials have no implemented native transfer.', 'shell_material')
+            raise material_error(scene, row['material'], row['id'], 'shell_material',
+                                 'has a glow assigned to a surface outside the lamp controls.',
+                                 [OPTICS, 'For solid bodywork, set Emission Strength to 0 on a copy of this material in Blender.', REIMPORT])
         if material.get('alpha_mode') == 'MASK':
-            _fail('Alpha-cutout materials require an implemented native shader route.', 'shell_material')
+            raise material_error(scene, row['material'], row['id'], 'shell_material',
+                                 'uses an alpha cutout that the GT6 material cannot draw.', alpha_steps(material, row['role']))
         if material.get('normal_map') and 'normalTexture' not in replaced:
-            _fail('This bounded route does not transfer source normal maps.',
-                  'shell_material')
+            raise material_error(scene, row['material'], row['id'], 'shell_material',
+                                 'uses a normal map that the GT6 material cannot carry.', finish_steps(['normalTexture']))
         if row['role'] == 'paint' and material.get('base_texture') is not None:
-            _fail('Textured paint requires a native paint-texture recipe.', 'shell_material')
+            raise material_error(scene, row['material'], row['id'], 'shell_material',
+                                 'has a colour texture on panels assigned to factory Paint.', [BODY_DETAIL])
         if row['role'] == 'paint' and material.get('alpha_mode') == 'BLEND':
-            _fail('Transparent Paint would become opaque in the native factory-paint recipe. '
-                  'Review genuine glass as Glass or use a supported opaque paint surface.',
-                  'shell_material')
+            raise material_error(scene, row['material'], row['id'], 'shell_material',
+                                 'uses transparency on panels assigned to factory Paint.', alpha_steps(material, 'paint'), check_alpha=True)
         # Lamp base surfaces are grouped as Body by the shared serializer. Its
         # opaque palette branch precedes transparency handling, so a reviewed
         # transparent source cannot silently take that branch in this route.
         if (row['role'] in ('body', 'interior', 'headlight', 'taillight', 'brakelight')
                 and material.get('alpha_mode') == 'BLEND'
                 and material.get('base_texture') is None and material['metallic'] < .4):
-            _fail('This untextured transparent surface would use an opaque native palette. '
-                  'Glass surfaces need the Glass role; transparent functional lamps need a reviewed recipe.',
-                  'shell_material')
+            raise material_error(scene, row['material'], row['id'], 'shell_material',
+                                 'uses transparency on a surface that would turn solid in GT6.',
+                                 alpha_steps(material, row['role']))
         if material.get('base_texture') is not None and row['material'] not in checked:
             converter.source_image(material)
             checked.add(row['material'])
@@ -583,7 +590,10 @@ def review_shell(scene, project, placement, dispositions=None, lighting=None, ru
     except GarageError as exc:
         report.update(available=False, ready_for_candidate=False, within_profile_limits=False,
                       review_digest=None, approved=False)
-        report['blockers'].append({'code': exc.code, 'message': str(exc)})
+        blocker = {'code': exc.code, 'message': str(exc)}
+        if isinstance(exc.detail, dict) and 'material_help' in exc.detail:
+            blocker['material_help'] = exc.detail['material_help']
+        report['blockers'].append(blocker)
     _json(report)
     return report
 

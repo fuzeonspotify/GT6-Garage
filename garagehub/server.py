@@ -318,7 +318,7 @@ def handler_type(app:App):
                     key=path.rsplit('/',1)[1]
                     if key not in app.downloads:raise GarageError('Export no longer available. Export it again.')
                     p=app.downloads[key];return self.send(200,p.read_bytes(),'application/octet-stream',p.name)
-                static={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/viewer.js':'viewer.js','/driver-seat.js':'driver-seat.js','/style.css':'style.css','/icon.svg':'icon.svg','/example-sedan.glb':'examples/kenney_sedan.glb','/tester.html':'tester.html','/tester.js':'tester.js','/tester.css':'tester.css'}
+                static={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/viewer.js':'viewer.js','/driver-seat.js':'driver-seat.js','/material-help.js':'material-help.js','/material-help.css':'material-help.css','/style.css':'style.css','/icon.svg':'icon.svg','/example-sedan.glb':'examples/kenney_sedan.glb','/tester.html':'tester.html','/tester.js':'tester.js','/tester.css':'tester.css'}
                 if path not in static:return self.send(404,{'error':'Not found'})
                 p=app.web/static[path];return self.send(200,p.read_bytes(),mimetypes.guess_type(p)[0] or 'application/octet-stream')
             except GarageError as e:return self.send(403 if e.code=='unauthorized' else 400,{'error':str(e),'code':e.code})

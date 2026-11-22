@@ -93,6 +93,10 @@ class ModelTests:
             review=review_shell(scene,draft,settings['placement'],settings['dispositions'],settings['lighting'],settings['running_gear'])
             if not review['available']:
                 row['messages']=component_messages(review,project)
+                for blocker in review['blockers']:
+                    if 'material_help' in blocker:
+                        row['material_help'] = blocker['material_help']
+                        break
                 return self._save(row)
             if not template:
                 row.update(stage='source fit',status='needs_game_files',messages=['Source geometry fits the stock hubs. Set up your GT6 files to test the assembled model.'])

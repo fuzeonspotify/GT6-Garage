@@ -1,4 +1,5 @@
 import {Viewer} from './viewer.js';
+import {materialHelpPanel} from './material-help.js';
 const $=id=>document.getElementById(id);let token=location.hash.slice(1)||sessionStorage.getItem('garage-token')||'';if(token)sessionStorage.setItem('garage-token',token);history.replaceState(null,'',location.pathname);let project=null,selected=null,currentJob=null,state=null;let planEpoch=0,approvedPlan=null,targetCatalogue=null;
 let navigationEpoch=0,activeUiJob=null,jobBarrier=Promise.resolve(),preparationPending=null,previewUnverifiedContext=null,previewLoadingContext=null;
 let activePage="workshop",tyreProposal=null,tyreProposalEpoch=0,tyreProposalPending=null;
@@ -155,6 +156,7 @@ async function runGuideAction(step,context,pid,version){
  if(step.action==='save_shell_components'){page('export');return saveShellComponentChoices()}
  if(step.action==='review_shell_parts'){page('export');$('shellComponents').open=true;focus('shellComponentList');return}
  if(step.action==='review_shell'){page('export');focus('reviewTemplateShell');return}
+ if(step.action==='material_help'){page('export');focus('shellMaterialHelp');return}
  if(['review_parts','review_wheels','review_paint'].includes(step.action)){
   page('workshop');$('partSearch').value='';$('roleFilter').value=step.action==='review_wheels'&&project.inspection.parts.some(part=>cornerRoles.includes(part.role))?'wheels':'all';
   const id=(step.part_ids||[]).find(value=>project.inspection.parts.some(part=>part.id===value));if(id)selectPart(id);else clearSelectedPart();renderParts();focus(id?'partRole':'partList');return;
@@ -353,6 +355,7 @@ function clearTemplateShellReview(keepDisplay=false){
  globalThis.GarageDriverFit?.clear();
  clearSetupProposal();
  shellEpoch++;shellReview=null;shellPreviewDigest=null;
+ $('shellMaterialHelp').replaceChildren();
  $('confirmShellAssembly').checked=false;$('confirmShellAssembly').disabled=true;$('approveShellAssembly').disabled=true;
  if(!keepDisplay){$('shellReviewResult').classList.add('hidden');$('shellStage').classList.add('hidden');$('shellViews').classList.add('hidden')}
 }
@@ -370,6 +373,8 @@ function shellGuidance(step){
  if(!state?.car_baseline)return step('baseline','Choose your owned starting package','The assembled preview reads its supplied wheel geometry from your owned compatible template.','choose_baseline','Choose starting package');
  if(!state?.car_packer)return step('packer','Set up the native packer once','Garage checks the selected packer and uses isolated output folders.','choose_packer','Choose native packer');
  if(shellPending?.context===editState.context)return step('shell_pending','Preparing your assembled car','Wait for the matching component preview and its checks to finish.',null,'Preparing…');
+ const materialBlocker=shellReviewIsCurrent()&&shellReview.blockers.find(item=>item?.material_help);
+ if(materialBlocker)return step('material_help','Review '+materialBlocker.material_help.material,materialBlocker.message,'material_help','See how to fix it');
  if(!project.template_shell_status?.approved)return step('shell_review','Place your body on the supplied wheels','Choose lights, inspect the assembled preview, adjust the body and confirm the result.','review_shell','Review assembled car');
  if(approvedPlan?.pid===project.id&&approvedPlan.epoch===planEpoch&&approvedPlan.settingsVersion===editState.version)return step('plan_checked','The full plan permits a test build','Your reviewed assembly and separate-car destination are ready for a native test package. Game behavior still needs testing.','show_build','Review checked build');
  return step('full_plan','Check the complete build plan','Your assembly choice is saved. Check the current destination and combined package before building.','check_plan','Check build plan');
@@ -491,6 +496,12 @@ function showShellReview(value){
  const problems=value.blockers.filter(p=>p?.code!=='wheel_fit'||!value.wheel_check).map(p=>typeof p==='string'?p:p.message||p.detail||p.code).filter(Boolean);
  if(shellOptions().lighting.mode==='supplied'&&value.blockers.some(p=>p?.code==='shell_light_mount'))$('shellLightAdjust').open=true;
  $('shellIssues').textContent=problems.join('\n');$('shellIssues').classList.toggle('hidden',!problems.length);
+ const help=value.blockers.find(item=>item?.material_help)?.material_help;
+ const panel=$('shellMaterialHelp');
+ panel.replaceChildren();
+ if(help)panel.append(materialHelpPanel(help,()=>{
+   if(project?.id===value.id&&shellReviewIsCurrent())showMaterialPart(help.part_id);
+ }));
  const totals=value.triangle_dispositions||{};let text=(totals.emit||0).toLocaleString()+' source triangles included · '+(totals.excluded||0).toLocaleString()+' explicitly excluded.';
  if(value.placement)text+=' Body size '+value.placement.scale.toFixed(3)+'×, position '+value.placement.translation_metres.map(v=>v.toFixed(3)).join(', ')+' m.';
  const fit=wheelFitText(value.source_wheel_fit);
@@ -841,6 +852,18 @@ function selectPart(id){
  for(const id of ['partRole','partCorner','assignMaterial','isolate'])$(id).disabled=preparationPending?.context===editState.context;
  updatePartitionControl();renderParts();
 }
+function showMaterialPart(id){
+ const part=project?.inspection.parts.find(item=>item.id===id);
+ if(!part)return;
+ page('workshop');
+ $('roleFilter').value='all';
+ $('partSearch').value=part.material_name;
+ viewer.isolated=null;
+ $('isolate').textContent='Isolate selected part';
+ selectPart(id);
+ $('partSearch').scrollIntoView({block:'center'});
+ $('partSearch').focus();
+}
 async function settings(changes){if(!project)return;const context=editState.context;stageSettings(changes);const saving=editState.save();renderImportGuide();try{return await saving}catch(error){if(editState.context===context)throw error}finally{if(editState.context===context)renderImportGuide()}}
 async function assign(all=false){if(!project||!selected||preparationPending?.context===editState.context)return;let p=project.inspection.parts.find(x=>x.id===selected),role=$('partRole').value,corner=$('partCorner').value||null,overrides={...project.overrides};if(all&&!confirm('Apply '+roleLabels[role]+' to every part using '+p.material_name+'?'))return;for(const row of project.inspection.parts.filter(x=>all?x.material===p.material:x.id===selected))overrides[row.id]={role,corner:all?row.corner:corner};const saving=settings({overrides,approved_roles:false});updatePartitionControl();await saving}
 $('partRole').onchange=()=>safe(()=>assign());$('partCorner').onchange=()=>safe(()=>assign());$('assignMaterial').onclick=()=>safe(()=>assign(true));$('isolate').onclick=()=>{viewer.isolated=viewer.isolated?null:selected;$('isolate').textContent=viewer.isolated?'Show all parts':'Isolate selected part';viewer.invalidate()};$('partSearch').oninput=renderParts;$('roleFilter').onchange=renderParts;$('front').onchange=()=>safe(()=>settings({forward:$('front').value,approved_roles:false}));$('wheelbase').onchange=()=>safe(()=>settings({wheelbase_metres:$('wheelbase').value===''?null:Number($('wheelbase').value)}));$('confirmParts').onchange=()=>safe(()=>{if(preparationPending?.context===editState.context||previewUnverifiedContext===editState.context){$('confirmParts').checked=false;notice('Refresh the prepared preview, then review and confirm the parts.');return}return settings({approved_roles:$('confirmParts').checked})});$('goExport').onclick=()=>page('export');
@@ -889,8 +912,10 @@ async function exportAction(url,needsProject=true,expectedSettingsVersion=null){
 $('saveProject').onclick=()=>safe(async()=>{page('export');await exportAction('/api/export-project')});$('exportProject').onclick=()=>safe(()=>exportAction('/api/export-project'));$('exportNeutral').onclick=()=>safe(()=>exportAction('/api/export-neutral'));$('inspectPackage').onclick=()=>safe(()=>exportAction('/api/inspect-package',false));$('exportPackage').onclick=()=>safe(()=>exportAction('/api/export-package',false));$('pickPackage').onclick=()=>safe(()=>configure(async()=>{let r=await api('/api/pick',{kind:'package'});await refresh();if(r.manifest)showResult(r.manifest)}));$('cancelJob').onclick=()=>safe(async()=>{if(currentJob){await api('/api/cancel',{id:currentJob});$('jobstatus').textContent='Cancellation requested. Finishing the current safe step.'}});$('openExports').onclick=()=>safe(()=>api('/api/open-exports',{}));$('quit').onclick=()=>safe(async()=>{if(currentJob&&!confirm('Cancel the operation and close Garage?'))return;await api('/api/quit',{});document.body.replaceChildren();let e=document.createElement('div');e.style.cssText='padding:80px;font-family:Segoe UI;color:#dae8df';let h=document.createElement('h1');h.textContent='Garage is closed.';e.append(h);let p=document.createElement('p');p.textContent='Your projects are saved. You can close this tab.';e.append(p);document.body.append(e)});
 setInterval(()=>api('/api/heartbeat',{}).catch(()=>{}),12000);safe(async()=>{await refresh();
  const requested=sessionStorage.getItem('garage-test-project');sessionStorage.removeItem('garage-test-project');
+ const requestedPart=sessionStorage.getItem('garage-test-part');sessionStorage.removeItem('garage-test-part');
  const selected=state.projects.find(p=>p.id===requested)||state.projects[0];
- if(selected)await openProject(selected.id);});
+ if(selected)await openProject(selected.id);
+ if(requestedPart&&project?.id===requested)showMaterialPart(requestedPart);});
 
 $('pickCarBaseline').onclick=()=>safe(async()=>{invalidateCarPlan('Baseline changed. Check the destination and build plan again.',true);await configure(async()=>{await api('/api/pick',{kind:'car-baseline'});targetCatalogue=null;await refresh();renderInstallation()})});
 $('pickCarPacker').onclick=()=>safe(async()=>{invalidateCarPlan('Packer changed. Check the build plan again.',true);await configure(async()=>{await api('/api/pick',{kind:'car-packer'});await refresh()})});

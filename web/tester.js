@@ -1,3 +1,5 @@
+import {materialHelpPanel} from './material-help.js';
+
 const $ = id => document.getElementById(id);
 const token = location.hash.slice(1) || sessionStorage.getItem('garage-token') || '';
 if (token) sessionStorage.setItem('garage-token', token);
@@ -66,10 +68,22 @@ function renderRow(row) {
   if(facts.length)card.append(element('p',facts.join(' · '),'detail'));
   if(row.wheels?.diameter_ratio){const values=Object.values(row.wheels.diameter_ratio).filter(Number.isFinite).map(v=>Math.round(v*100));if(values.length){const low=Math.min(...values),high=Math.max(...values);card.append(element('p','GT6 tyres measure '+(low===high?low:low+'–'+high)+'% of the source tyre diameter. Inspect the gap around the arches.','detail'));}}
   if(row.messages?.length){const list=element('ul');for(const msg of row.messages)list.append(element('li',msg));card.append(list);}
+  function openWorkshop(partId) {
+    sessionStorage.setItem('garage-test-project',row.project_id);
+    if(partId)sessionStorage.setItem('garage-test-part',partId);
+    else sessionStorage.removeItem('garage-test-part');
+    location.href='/';
+  }
+  if(row.material_help){
+    const part=row.material_help.part_id;
+    card.append(materialHelpPanel(row.material_help,row.project_id?()=>openWorkshop(part):null));
+  }else if(row.project_id&&row.messages?.some(msg=>msg.includes('separate native recipe')||msg.includes('no implemented native transfer'))){
+    card.append(element('p','This saved result has an older warning. Open in workshop and check the assembled car again to see the material and repair steps.'));
+  }
   if(row.build_attempt?.result==='failed')card.append(element('p',row.build_attempt.message));
   if(row.native_finish_substitutions?.length)card.append(element('p','The preview uses the GT6 material finish for these source effects: '+row.native_finish_substitutions.join(', ')+'.','detail'));
   if(row.build)card.append(element('p',row.build.zip,'detail'));
-  if(row.project_id){const actions=element('div',null,'rowActions');actions.append(button('Open in workshop',()=>{sessionStorage.setItem('garage-test-project',row.project_id);location.href='/';}));card.append(actions);}
+  if(row.project_id){const actions=element('div',null,'rowActions');actions.append(button('Open in workshop',()=>openWorkshop()));card.append(actions);}
   const details=element('details');details.append(element('summary','Single-player race result'+(row.race.result==='passed'?' · passed':row.race.result==='needs_fix'?' · needs a fix':'')));
   const fields=element('div',null,'racefields'),[rl,rf]=choice('Result',[['untested','Untested'],['passed','Looks right on track'],['needs_fix','Needs a fix']],row.race.result);
   const [pl,pf]=choice('Platform',[['','Choose platform'],['RPCS3','RPCS3'],['PS3','PS3']],row.race.platform||'');fields.append(rl,pl);details.append(fields);

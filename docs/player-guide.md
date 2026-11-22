@@ -1,6 +1,6 @@
 # A first car on PS3 or RPCS3
 
-You can try the model tester on a Windows x64 PC with your own model. To build a stock patch, use GT6 update **1.22**. Before installation, compare your game’s title ID with the ID in the generated ZIP’s `README_INSTALL.txt`. Version 0.4.16 targets `BCES01893` in its export and its first-time PS3 FTP wizard. Other title IDs still need an installation check. [Download the Windows ZIP](https://github.com/fuzeonspotify/GT6-Garage/releases/latest)
+You can try the model tester on a Windows x64 PC with your own model. To build a stock patch, use GT6 update **1.22**. Before installation, compare your game’s title ID with the ID in the generated ZIP’s `README_INSTALL.txt`. This release targets `BCES01893` in its export and its first-time PS3 FTP wizard. Other title IDs still need an installation check. [Download the Windows ZIP](https://github.com/fuzeonspotify/GT6-Garage/releases/latest)
 
 ## 1. Copy five update files once
 
@@ -60,6 +60,16 @@ We recommend making a separate copy of your game save before installing a custom
 5. For rollback, stop GT6 and restore the complete matching pre-install update or package, its data first and header last. Restore the matching backed-up save if required.
 
 ## When something looks wrong
+
+### When a material stops the import
+
+Look for **How to fix** under the material warning in your model test result or assembled-car check. Click **Show in Parts** to select the affected part and list the parts using its material. In the workshop you can also click **See how to fix it** at the top.
+
+For example, a solid body panel may use an opaque police livery but have a material marked transparent. The panel explains how to keep the colour texture in Blender, export a new GLB, and assign the markings to **Body detail** in Garage. Actual windows and grilles with holes need different treatment. Follow the steps for the material named in your result.
+
+If an older saved result only shows a warning, choose **Open in workshop** and check the assembled car again with the updated Garage.
+
+### Other issues
 
 | Symptom | Next check |
 |---|---|

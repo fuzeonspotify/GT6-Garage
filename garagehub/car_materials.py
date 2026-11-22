@@ -38,9 +38,7 @@ class Materials:
         mid,uv=self.flat_palette
         return {'material':mid,'fvf':self.editor.fvf(1),'transparent':False,'variation':False,'constant_uv':uv[source_id]}
 
-    def source_image(self,mat):
-        color=mat['color'];texture=mat['base_texture']
-        if texture is None:return Image.new('RGBA',(4,4),tuple(srgb(color[:3]).tolist())+(int(round(color[3]*255)),))
+    def embedded_image(self, texture):
         if self.gltf is None:self.gltf=GLB(self.scene.raw)
         doc=self.scene.document; tex=doc['textures'][texture]
         if 'source' not in tex:raise GarageError('Compressed texture-only sources are unsupported by this profile.')
@@ -49,7 +47,13 @@ class Materials:
         data,_=self.gltf.view(imdef['bufferView'])
         with Image.open(io.BytesIO(data)) as im:
             if im.width*im.height>16_777_216:raise GarageError('Source texture exceeds the 16 MP decode budget.')
-            image=im.convert('RGBA');image.thumbnail((512,512),Image.Resampling.LANCZOS)
+            return im.convert('RGBA')
+
+    def source_image(self,mat):
+        color=mat['color'];texture=mat['base_texture']
+        if texture is None:return Image.new('RGBA',(4,4),tuple(srgb(color[:3]).tolist())+(int(round(color[3]*255)),))
+        image = self.embedded_image(texture)
+        image.thumbnail((512,512),Image.Resampling.LANCZOS)
         # glTF uses factor multiplication in linear colour, not in sRGB bytes.
         pixels=np.asarray(image,dtype=float)/255;rgb=np.where(pixels[:,:,:3]<=.04045,pixels[:,:,:3]/12.92,((pixels[:,:,:3]+.055)/1.055)**2.4)
         pixels[:,:,:3]=srgb(rgb*np.asarray(color[:3]))/255;pixels[:,:,3]*=color[3];image=Image.fromarray(np.round(pixels*255).astype(np.uint8))
@@ -60,6 +64,8 @@ class Materials:
         # coordinates. Transforming image pixels or UVs again here would apply
         # the authored transform twice; non-UV0 sets need no separate shader.
         # This recipe still provides only native repeat wrapping.
+        doc = self.scene.document
+        tex = doc['textures'][texture]
         sampler=doc.get('samplers',[])[tex['sampler']] if 'sampler' in tex else {}
         if sampler.get('wrapS',10497)!=10497 or sampler.get('wrapT',10497)!=10497:raise GarageError('This profile currently requires repeat-wrapped textures. Bake clamp/mirror edges before conversion.')
         return image

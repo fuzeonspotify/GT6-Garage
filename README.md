@@ -4,7 +4,7 @@ Bring a 3D car model into **Gran Turismo 6** as a driveable exterior. Fit the bo
 
 **[Download GT6 Garage for Windows](https://github.com/fuzeonspotify/GT6-Garage/releases/latest)** · **[RPCS3 on PC](#rpcs3-on-pc)** · **[PS3 over FTP](#ps3-over-ftp)**
 
-Extract the whole Windows x64 ZIP and open **GT6Garage.exe**. The workshop opens in your browser. Both installation guides use GT6 update **1.22**. The first-time PS3 FTP wizard and car ZIPs in Garage 0.4.16 use the tested title ID `BCES01893`. Before installing, check that the ID at the top of `README_INSTALL.txt` in your generated car ZIP matches your copy of GT6.
+Extract the whole Windows x64 ZIP and open **GT6Garage.exe**. The workshop opens in your browser. Both installation guides use GT6 update **1.22**. The first-time PS3 FTP wizard and car ZIPs use the tested title ID `BCES01893`. Before installing, check that the ID at the top of `README_INSTALL.txt` in your generated car ZIP matches your copy of GT6.
 
 **We recommend backing up your GT6 game save before installing a custom car.** Keep a copy on a separate drive so you can restore your garage and career progress if your save is lost or corrupted. [How to back up your save on RPCS3 or PS3](docs/player-guide.md#back-up-your-gt6-save)
 
@@ -56,6 +56,7 @@ Thank you to **Willyham**, **Diego**, and **Glitcher101GamingYT** for helping ve
 ## Learn or contribute
 
 - The player guide covers the five-file transfer, first-time template, driver and wheel fit, adding a second car, FTP order and rollback. [Read the player guide](docs/player-guide.md)
+- When a material stops your import, **How to fix** names the material and explains the next steps. **Show in Parts** selects it on your car. [Find material help](docs/player-guide.md#when-a-material-stops-the-import)
 - The engineering guide follows a model through coordinate conversion, native geometry, showroom and race wheel paths, driver anchors, database allocation and pack verification. [Read how it works](docs/how-it-works.md)
 - The manual describes a complete worked body replacement, an optional separate dealership entry, and independent file checks. [Read the manual import guide](docs/manual-import.md)
 - The build guide covers running from source, compiling the pinned packer, tests and the Windows release. [Build or contribute](docs/build.md)

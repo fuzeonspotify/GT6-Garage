@@ -13,6 +13,7 @@ import unittest
 from unittest.mock import patch
 
 import numpy as np
+from PIL import Image
 
 from .car_geometry import prepare_parts, batches
 from .car_profiles import ASSETS, PROFILE
@@ -72,6 +73,45 @@ def one_surface(*, triangles=1, textured=False):
 
 
 class SurfaceRealizationTests(unittest.TestCase):
+    def test_material_help_identifies_shared_livery_and_preserves_texture_alpha(self):
+        scene, inspection = one_surface(textured=True)
+        first = scene.parts[0]
+        second = copy.copy(first)
+        second.id = 'other-panel'
+        scene.parts.append(second)
+        inspection['parts'] = [{'id': p.id, 'role': 'paint'} for p in scene.parts]
+        scene.materials[0].update(name='Patrol livery', alpha_mode='BLEND')
+        for alpha, expected_note in ((255, 'is opaque'), (254, 'contains transparent pixels')):
+            with self.subTest(alpha=alpha):
+                image = Image.new('RGBA', (1024, 4), (10, 20, 30, 255))
+                image.putpixel((1, 0), (10, 20, 30, alpha))
+                with patch('garagehub.material_help.Materials.embedded_image', return_value=image):
+                    with self.assertRaises(GarageError) as caught:
+                        opaque_two_sided_plan(scene, inspection)
+                help_data = caught.exception.detail['material_help']
+                self.assertEqual((help_data['material'], help_data['part_id'], help_data['part_count']),
+                                 ('Patrol livery', first.id, 2))
+                self.assertIn(expected_note, help_data['texture_note'])
+                self.assertIn('Base Color', ' '.join(help_data['steps']))
+                self.assertIn('Body detail', ' '.join(help_data['steps']))
+                self.assertEqual(scene.materials[0]['alpha_mode'], 'BLEND')
+
+    def test_cutout_and_specular_have_different_material_instructions(self):
+        from .template_shell import _materials
+        scene, inspection = one_surface()
+        scene.materials[0]['alpha_mode'] = 'MASK'
+        with self.assertRaises(GarageError) as caught:
+            opaque_two_sided_plan(scene, inspection)
+        help_data = caught.exception.detail['material_help']
+        self.assertIn('openings', ' '.join(help_data['steps']))
+        self.assertNotIn('Alpha to 1.000', ' '.join(help_data['steps']))
+        scene.document['materials'] = [{'extensions': {'KHR_materials_specular': {'specularColorFactor': [2., 2., 2.]}}}]
+        row = dict(inspection['parts'][0], material=0, disposition='emit')
+        with self.assertRaises(GarageError) as caught:
+            _materials(scene, [row])
+        self.assertIn('KHR_materials_specular', str(caught.exception))
+        self.assertIn('IOR Level to 0.5', ' '.join(caught.exception.detail['material_help']['steps']))
+
     def test_plan_counts_original_faces_once_and_excludes_ignored_components(self):
         scene, project = shell_fixture(extra_material={'doubleSided': True}, with_badge=True)
         before = source_snapshot(scene)

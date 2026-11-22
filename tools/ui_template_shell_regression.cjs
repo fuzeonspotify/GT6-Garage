@@ -17,6 +17,23 @@ async function preview(env){await env.get('reviewTemplateShell').onclick()}
 async function approve(env){env.get('confirmShellAssembly').checked=true;env.get('confirmShellAssembly').onchange();await env.get('approveShellAssembly').onclick()}
 async function main(){
  const checks=[];
+ const materialEnv=await shellEnvironment();
+ const materialHelp={material:'Paint',part_id:'n0p0',part_name:'body',part_count:1,steps:['Keep the texture on Base Color.']};
+ materialEnv.shellReport({available:false,ready_for_candidate:false,preview_available:false,review_digest:null,
+   blockers:[{code:'shell_surface_realization',message:'Paint uses transparency.',material_help:materialHelp}]});
+ await preview(materialEnv);
+ assert.equal(materialEnv.get('guideAction').textContent,'See how to fix it');
+ await materialEnv.get('guideAction').onclick();
+ assert.equal(materialEnv.get('shellMaterialHelp').focused,true);
+ const panel=materialEnv.get('shellMaterialHelp').children[0];
+ assert.equal(panel.children[0].textContent,'How to fix Paint');
+ panel.children.at(-1).onclick();
+ assert.equal(materialEnv.get('selectedName').dataset.partId,'n0p0');
+ assert.equal(materialEnv.get('partSearch').value,'Paint');
+ assert.equal(materialEnv.get('confirmShellAssembly').disabled,true);
+ materialEnv.run('clearTemplateShellReview()');
+ assert.equal(materialEnv.get('shellMaterialHelp').children.length,0);
+ checks.push('A blocked material shows repair steps, selects the matching component and clears stale guidance');
  const guided=await shellEnvironment();
  assert.equal(guided.get('bodyFitPanel').classList.contains('hidden'),true);assert.equal(guided.get('templateShellPanel').classList.contains('hidden'),false);assert.equal(guided.get('guideAction').dataset.action,'review_shell');assert.equal(guided.get('guideCapability').classList.contains('hidden'),true);assert.doesNotMatch(guided.get('guideTitle').textContent,/four|tyre/i);
  guided.get('assemblyMode').value='stock_size';await guided.get('assemblyMode').onchange();assert.equal(guided.get('bodyFitPanel').classList.contains('hidden'),true);assert.equal(guided.records.get('shell').template_shell_settings.running_gear.tyre_size,'game');assert.equal(guided.records.get('shell').installation.mode,'new_entry');

@@ -1,0 +1,12 @@
+.materialHelp {
+  border-left: 3px solid #e5b558;
+  background: #202923;
+  color: #edf3ee;
+  padding: 14px 18px;
+  margin: 12px 0;
+  overflow-wrap: anywhere;
+}
+.materialHelp h3 { margin: 0; font-size: 17px; }
+.materialHelp p { margin: 5px 0; color: #c8d5ce; }
+.materialHelp ol { padding-left: 22px; margin: 10px 0; line-height: 1.55; }
+.materialHelp li + li { margin-top: 5px; }
