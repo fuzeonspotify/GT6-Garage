@@ -2,21 +2,40 @@
 
 Bring a 3D car model into **Gran Turismo 6** as a driveable exterior. Fit the body to a GT6 chassis, choose factory wheels, place the animated driver and build an installation ZIP for PS3 or RPCS3. Model preparation runs locally on Windows. You can preview your own model before setting up any game files.
 
-**[Download GT6 Garage for Windows](https://github.com/fuzeonspotify/GT6-Garage/releases/latest)** · **[Player guide and PS3 FTP installation](docs/player-guide.md)** · **[Make a car without the Garage app](docs/manual-import.md)**
+**[Download GT6 Garage for Windows](https://github.com/fuzeonspotify/GT6-Garage/releases/latest)** · **[RPCS3 on PC](#rpcs3-on-pc)** · **[PS3 over FTP](#ps3-over-ftp)**
 
-## Your first car
+Extract the whole Windows x64 ZIP and open **GT6Garage.exe**. The workshop opens in your browser. Both installation guides use GT6 update **1.22**. The first-time PS3 FTP wizard and car ZIPs in Garage 0.4.16 use the tested title ID `BCES01893`. Before installing, check that the ID at the top of `README_INSTALL.txt` in your generated car ZIP matches your copy of GT6.
 
-1. Download the **Windows x64 ZIP** from Releases. Extract the whole ZIP into a writable folder and open **GT6Garage.exe**. Garage opens a local browser tab.
-2. In **Starting build**, choose **Find car template** if you have a previous Garage kit or stock workspace. New players can choose **Prepare car template** to build one from their own game and the artist’s source model. The wizard can read the small set of donor parts directly over PS3 FTP.
-3. Choose **Use my stock PDIPFS**. Select the folder containing **five files** from your own European GT6 update. Together they are **17.3 MB**. The player guide lists each file and the destination on your console. This setup is reusable.
-4. Choose a model, open it in **Car workshop**, review the four wheels and driver, then choose **Add a new car**. Build the game ZIP after reviewing the assembled car.
-5. With GT6 closed, upload the contents of the generated **Install** folder. Transfer **K/4D last**. Check the result in a single-player race and replay. Choose **Keep this combined build for the next car** to add another car alongside it.
+## RPCS3 on PC
+
+1. **Find your update folder.** In RPCS3, right-click **Gran Turismo 6** and choose **Open Folder → Open Game Data Folder**. Open `USRDIR/PDIPFS`. This is the local folder you’ll use for setup and installation.
+2. **Set up Garage once.** Under **Starting build**, choose **Find car template** if you have an earlier Garage kit or prepared workspace. For a new template, choose **Prepare car template → Disc archive on this PC**. Select your local `PDIPFS` and the `PS3_GAME/USRDIR/GT.VOL` from your disc copy. After the template is ready, choose **Use my stock PDIPFS** and select the folder from step 1. [First-time template instructions](docs/player-guide.md#2-set-up-the-car-template)
+3. **Build your car.** Click **Choose models**, select your model, and click **Open in workshop**. Check all four wheels and the animated driver in the preview. Select **Add a new car entry**, confirm the fit, and build the game ZIP.
+4. **Install locally.** Stop GT6 in RPCS3 and back up your current game update and save. Extract the car ZIP. Copy the contents of `Install/` into the `PDIPFS` folder from step 1, preserving the subfolders. Copy all other files first, then `K/4D` last. Start GT6 and check the car in a single-player race.
+
+## PS3 over FTP
+
+1. **Copy five update files to your PC.** Close GT6, connect your FTP client to the PS3, and open `/dev_hdd0/game/<TITLE_ID>/USRDIR/PDIPFS/`. For a disc copy, the title ID is the serial printed on your disc, with the hyphen removed. Copy the five paths below into a folder named `PDIPFS` on your PC, keeping their subfolders. Together they total **17.3 MB**. If you already have that stock folder on your PC, use it directly.
+
+   ```text
+   K/4D
+   9/H4/MS
+   9/QE/0B
+   9/R2/Q0
+   9/EJ/EX
+   ```
+
+2. **Set up Garage once.** Choose **Find car template** to reuse an earlier kit or workspace. For a new template, insert your GT6 disc, leave the FTP server running, and choose **Prepare car template → PS3 over FTP**. The wizard reads about **0.7 MB** of extra donor data and uses the artist’s source model to build the template locally. Then choose **Use my stock PDIPFS** and select your PC’s folder from step 1. [First-time template instructions](docs/player-guide.md#2-set-up-the-car-template)
+3. **Build your car on the PC.** Click **Choose models**, select your model, and click **Open in workshop**. Fit the wheels and driver, select **Add a new car entry**, confirm the preview, and build the game ZIP.
+4. **Upload the car.** With GT6 closed, back up your current game update and save. Extract the car ZIP on the PC. Upload the contents of `Install/` into the PS3’s `PDIPFS` folder from step 1, merging the subfolders. **Wait for all other transfers to finish, then upload `K/4D` last.** Start GT6 and check the car in a single-player race and replay.
+
+To keep your first custom car when adding a second one, choose **Keep this combined build for the next car** after a successful build. [Model fitting, testing and rollback](docs/player-guide.md)
 
 ## Compatibility
 
 | | Supported by this release |
 |---|---|
-| Starting game | Stock European **BCES01893**, update **1.22**, or a compatible combined Garage build. The update files are checked by content. |
+| Starting game | Stock GT6 update **1.22**, or a compatible combined Garage build. Stock setup checks the contents of the five update files. Other title IDs have yet to be verified for installation. |
 | Model inputs | GLB, glTF, OBJ, and a ZIP containing one model and its resources. FBX, Blender scenes and some compressed GLBs use a local Blender installation. |
 | Inherited from GT6 | Chassis, handling, sound, tyre system and animated driver. The reviewed exterior profile uses the Toyota Supra RZ ’97. |
 | What needs the player's judgment | The source model’s front, body dimensions, wheel arches, seat, glass and lights. Some models require manual fit adjustments or mesh editing in Blender. |
