@@ -141,7 +141,7 @@ class App:
         try:
             proc=subprocess.run(command,timeout=180,check=False,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
             data=read_json(result) if result.exists() else {'path':''}
-            if data.get('error'):raise GarageError(data['error'])
+            if data.get('error'):raise GarageError(data['error'],data.get('code','validation'))
             if kind=='test-models':
                 paths=data.get('paths',[])
                 return self.submit('Test selected car models',lambda c:self.model_tests.run_paths(paths,c)) if paths else {'cancelled':True}
@@ -194,7 +194,7 @@ class App:
         return {'path':str(package),'combined_baseline':True,'runtime_verified':False}
     def conversion_plan(self,pid,*,inputs=None):
         base=self.config.get('car_baseline');packer=self.config.get('car_packer')
-        if not base:raise GarageError('Set up your GT6 files in Model tester or choose a compatible starting package in Setup.')
+        if not base:raise GarageError('Set up your GT6 files in Model tester or choose a compatible starting package in Setup.', 'baseline_identity')
         scene,project=self.store.build_inputs(pid) if inputs is None else inputs
         shell=assembly_mode(project.get('assembly_mode','authored'))=='template_shell'
         if not shell and not self.development_authored:
@@ -318,7 +318,7 @@ def handler_type(app:App):
                     key=path.rsplit('/',1)[1]
                     if key not in app.downloads:raise GarageError('Export no longer available. Export it again.')
                     p=app.downloads[key];return self.send(200,p.read_bytes(),'application/octet-stream',p.name)
-                static={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/viewer.js':'viewer.js','/driver-seat.js':'driver-seat.js','/material-help.js':'material-help.js','/material-help.css':'material-help.css','/style.css':'style.css','/icon.svg':'icon.svg','/example-sedan.glb':'examples/kenney_sedan.glb','/tester.html':'tester.html','/tester.js':'tester.js','/tester.css':'tester.css'}
+                static={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/viewer.js':'viewer.js','/driver-seat.js':'driver-seat.js','/material-help.js':'material-help.js','/material-help.css':'material-help.css','/troubleshooting.js':'troubleshooting.js','/style.css':'style.css','/icon.svg':'icon.svg','/example-sedan.glb':'examples/kenney_sedan.glb','/tester.html':'tester.html','/tester.js':'tester.js','/tester.css':'tester.css'}
                 if path not in static:return self.send(404,{'error':'Not found'})
                 p=app.web/static[path];return self.send(200,p.read_bytes(),mimetypes.guess_type(p)[0] or 'application/octet-stream')
             except GarageError as e:return self.send(403 if e.code=='unauthorized' else 400,{'error':str(e),'code':e.code})

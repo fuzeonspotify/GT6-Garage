@@ -1,10 +1,13 @@
 import {materialHelpPanel} from './material-help.js';
+import * as Help from './troubleshooting.js';
 
 const $ = id => document.getElementById(id);
 const token = location.hash.slice(1) || sessionStorage.getItem('garage-token') || '';
 if (token) sessionStorage.setItem('garage-token', token);
 history.replaceState(null, '', location.pathname);
 let results = [], busy = false;
+Help.mount(document);
+$('showTroubleshooting').onclick=()=>$('troubleshootingTitle').focus();
 
 async function api(path, data, file) {
   const headers = {'X-Garage-Token':token};
@@ -15,10 +18,16 @@ async function api(path, data, file) {
     options.method='POST'; headers['Content-Type']='application/json'; options.body=JSON.stringify(data);
   }
   const r=await fetch(path,options), value=await r.json();
-  if (!r.ok) throw Error(value.error || 'Garage could not complete this action.');
+  if (!r.ok) throw Object.assign(new Error(value.error || 'Garage could not complete this action.'), {code:value.code});
   return value;
 }
-function message(text) { $('notice').textContent=text; $('notice').hidden=!text; }
+function message(text, code) {
+  const box=$('notice');
+  box.textContent=text;
+  box.hidden=!text;
+  const topic=Help.forError(code);
+  if (topic) box.append(Help.panel(topic,true));
+}
 function progress(text) { $('progress').textContent=text; $('progress').hidden=!text; }
 async function watch(job) {
   if (job.cancelled) return;
@@ -26,7 +35,7 @@ async function watch(job) {
   while (true) {
     const state=await api('/api/job/'+job.id);
     if (state.state==='complete') return state.result;
-    if (state.state==='error'||state.state==='cancelled') throw Error(state.error);
+    if (state.state==='error'||state.state==='cancelled') throw Object.assign(new Error(state.error), {code:state.code});
     progress(state.progress || state.label);
     await new Promise(resolve=>setTimeout(resolve,400));
   }
@@ -34,7 +43,7 @@ async function watch(job) {
 async function task(fn) {
   if (busy) return;
   busy=true; message(''); $('pick').disabled=$('browse').disabled=$('setup').disabled=$('included').disabled=true;
-  try { await fn(); } catch (e) { message(e.message); }
+  try { await fn(); } catch (e) { message(e.message,e.code); }
   finally { busy=false; progress(''); $('pick').disabled=$('browse').disabled=$('setup').disabled=$('included').disabled=false; await refresh().catch(e=>message(e.message)); }
 }
 async function uploads(files) {
@@ -81,6 +90,8 @@ function renderRow(row) {
     card.append(element('p','This saved result has an older warning. Open in workshop and check the assembled car again to see the material and repair steps.'));
   }
   if(row.build_attempt?.result==='failed')card.append(element('p',row.build_attempt.message));
+  const issueTopic=Help.forTestResult(row);
+  if(issueTopic)card.append(Help.panel(issueTopic,true));
   if(row.native_finish_substitutions?.length)card.append(element('p','The preview uses the GT6 material finish for these source effects: '+row.native_finish_substitutions.join(', ')+'.','detail'));
   if(row.build)card.append(element('p',row.build.zip,'detail'));
   if(row.project_id){const actions=element('div',null,'rowActions');actions.append(button('Open in workshop',()=>openWorkshop()));card.append(actions);}
@@ -95,7 +106,7 @@ async function refresh() {
   if (state.car_baseline && state.car_packer) {
     $('setupStatus').textContent = state.stock_setup_active ? 'Stock GT6 1.22 is ready. Choose a model to add to your game.' : 'Your saved build is selected. Choose a model to add to it, or choose your stock PDIPFS to start again.';
   } else {
-    $('setupStatus').textContent = state.stock_template ? 'Car template selected. Choose your European GT6 1.22 PDIPFS folder.' : 'First time here? Prepare a car template, or find one from an earlier Garage kit. Then choose your stock PDIPFS folder.';
+    $('setupStatus').textContent = state.stock_template ? 'Car template selected. Choose your stock GT6 1.22 PDIPFS folder.' : 'First time here? Prepare a car template, or find one from an earlier Garage kit. Then choose your stock PDIPFS folder.';
   }
   const included=state.included_setup;
   $('setup').hidden=included.available;

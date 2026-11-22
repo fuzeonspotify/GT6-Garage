@@ -112,7 +112,15 @@ class CoreTests(unittest.TestCase):
         doc=dict(passed=True,source_roundtrip_match=True,candidate_id='synthetic',files=files,header_sha256=hash_file(patch/'K/4D'),source_virtual_assets={});(root/'package_receipt.json').write_text(json.dumps(doc));return root
     def test_export_header_last(self):
         root=self.fixture_package();out=self.root/'mod.zip';r=export_package(root,out)
-        with zipfile.ZipFile(out) as z:self.assertEqual(z.namelist()[-1],'Install/K/4D')
+        with zipfile.ZipFile(out) as z:
+            self.assertEqual(z.namelist()[-1],'Install/K/4D')
+            instructions=z.read('README_INSTALL.txt').decode()
+            pc,ps3=instructions.split('PS3 over FTP')
+            self.assertIn('RPCS3 on PC',pc)
+            self.assertIn('PDIPFS/K/4D last',pc)
+            self.assertIn('/dev_hdd0/game/'+r['manifest']['title_id']+'/USRDIR/PDIPFS/',ps3)
+            self.assertIn('Upload Install/K/4D LAST',ps3)
+            self.assertIn('complete matching backup',ps3)
         self.assertFalse(r['manifest']['physical_ps3_tested'])
     def test_changed_payload_rejected(self):
         root=self.fixture_package();(root/'PatchOut/K/4D').write_bytes(b'modified')

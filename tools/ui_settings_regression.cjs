@@ -141,9 +141,12 @@ function environment(){
   throw Error('Unexpected API '+url);
  }};
  vm.createContext(context);
- const helperPath=require('node:path').join(require('node:path').dirname(sourcePath),'material-help.js');
+ const webDir=require('node:path').dirname(sourcePath);
+ const helperPath=require('node:path').join(webDir,'material-help.js');
  vm.runInContext(fs.readFileSync(helperPath,'utf8').replace('export function materialHelpPanel','function materialHelpPanel'),context,{filename:'material-help.js'});
- vm.runInContext(source.replace(/^import\s+\{(?:Viewer|materialHelpPanel)\}[^\n]*\n/gm,''),context,{filename:'app.js'});
+ const helpSource=fs.readFileSync(require('node:path').join(webDir,'troubleshooting.js'),'utf8').replace(/^export function /gm,'function ');
+ vm.runInContext('const Help=(()=>{'+helpSource+';return {forError,forWheelCheck,forTestResult,panel,mount};})();',context,{filename:'troubleshooting.js'});
+ vm.runInContext(source.replace(/^import [^\n]*\n/gm,''),context,{filename:'app.js'});
  return {context,get,document,calls,errors,records,jobs,viewerLoads,viewerViews,appState,run:code=>vm.runInContext(code,context),gateSettings:()=>settingsGate=deferred(),gateJob:()=>jobGate=deferred(),maxActive:()=>maxActiveSettings,failPolls:n=>{pollFailures=n},gateProject:id=>{const gate=deferred();projectGates.set(id,gate);return gate},picker:value=>{pickerResult=value},tyreFit:value=>{tyreFit=clone(value)},orientation:value=>{orientation=clone(value)},geometry:value=>{geometry=clone(value)},gateCalibration:()=>calibrationGate=deferred(),gatePartition:()=>partitionGate=deferred(),gateDiscovery:()=>discoveryGate=deferred(),gateApplyDiscovery:()=>applyDiscoveryGate=deferred(),gatePreview:()=>previewGate=deferred(),failPreviews:n=>{previewFailures=n},gateBodyFit:()=>bodyFitGate=deferred(),gateBodyFitPreview:()=>bodyFitPreviewGate=deferred(),gateBodyFitApproval:()=>bodyFitApprovalGate=deferred(),failBodyFitPreviews:n=>{bodyFitPreviewFailures=n},bodyFitReport:value=>{bodyFitOverride=clone(value)},wrongBodyFitDigest:value=>{wrongBodyFitDigest=value},bodyFitSoftware:value=>{bodyFitSoftware=value},gateShellReview:()=>shellReviewGate=deferred(),gateShellPreview:()=>shellPreviewGate=deferred(),gateShellApproval:()=>shellApprovalGate=deferred(),failShellPreviews:n=>{shellPreviewFailures=n},shellReport:value=>{shellReportOverride=clone(value)},shellPreview:value=>{shellPreviewOverride=clone(value)},wrongShellDigest:value=>{wrongShellDigest=value},shellSoftware:value=>{shellSoftware=value},nativeShellGeometry:value=>{nativeShellGeometry=value}};
 }
 async function mechanicalEnvironment(software=false){

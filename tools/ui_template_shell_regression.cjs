@@ -17,6 +17,27 @@ async function preview(env){await env.get('reviewTemplateShell').onclick()}
 async function approve(env){env.get('confirmShellAssembly').checked=true;env.get('confirmShellAssembly').onchange();await env.get('approveShellAssembly').onclick()}
 async function main(){
  const checks=[];
+ const guides=await shellEnvironment();
+ guides.run("showWheelCheck({status:'unmeasured'},false)");
+ assert.match(guides.get('wheelHowTo').children[0].children[0].textContent,/four tyres/);
+ assert.equal(guides.get('wheelHowTo').children[0].open,true);
+ guides.run("showWheelCheck({status:'incompatible',visibility:{race:{}}},true)");
+ assert.match(guides.get('wheelHowTo').children[0].children[0].textContent,/disappear in a race/);
+ guides.run("showWheelCheck({status:'compatible',passed:true},true)");
+ assert.equal(guides.get('wheelHowTo').children.length,0);
+ assert.equal(guides.run("Help.forTestResult({stage:'wheel placement',status:'needs_attention',wheels:{corners:2}})"),'sourceTyres');
+ assert.equal(guides.run("Help.forTestResult({status:'needs_attention',code:'missing_resource'})"),'modelFiles');
+ assert.equal(guides.run("Help.forTestResult({status:'needs_attention',code:'unexpected'})"),null);
+ checks.push('Wheel instructions follow the failing check and clear on success, including saved model tests from older versions');
+ guides.run("notice('A file is missing',false,'missing_resource')");
+ assert.match(guides.get('notice').children[0].children[0].textContent,/missing textures/);
+ guides.run("showNativeBuildResult($('exportResult'),{native_files:7})");
+ const links=guides.get('exportResult').children.slice(-3);
+ assert.match(links[0].children[0].textContent,/RPCS3/);
+ assert.match(links[1].children[0].textContent,/PS3 FTP/);
+ assert.match(links[2].children[0].textContent,/second car/);
+ assert.ok(links.every(link=>!link.open));
+ checks.push('Import warnings show specific repair steps and completed builds offer both install guides and the next-car guide');
  const materialEnv=await shellEnvironment();
  const materialHelp={material:'Paint',part_id:'n0p0',part_name:'body',part_count:1,steps:['Keep the texture on Base Color.']};
  materialEnv.shellReport({available:false,ready_for_candidate:false,preview_available:false,review_digest:null,

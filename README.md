@@ -35,6 +35,8 @@ To keep your first custom car when adding a second one, choose **Keep this combi
 
 ## Compatibility
 
+Need help while importing? Click **Troubleshooting** at the top of **Model tester**, or open **Car workshop → How it works**. The guides cover missing model files, wheel fit, the animated driver, keeping earlier cars and recovering an installation. When Garage recognises an issue, it opens the matching steps beside the warning. [Player troubleshooting guide](docs/player-guide.md#when-something-looks-wrong)
+
 | | Supported by this release |
 |---|---|
 | Starting game | Stock GT6 update **1.22**, or a compatible combined Garage build. Stock setup checks the contents of the five update files. Other title IDs have yet to be verified for installation. |

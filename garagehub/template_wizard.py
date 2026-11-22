@@ -21,7 +21,7 @@ def wizard(workspace):
     form.columnconfigure(1, weight=1)
     root.columnconfigure(0, weight=1)
     ttk.Label(form, text='Prepare your car template', font=('Segoe UI', 15, 'bold')).grid(row=0, columnspan=3, sticky='w')
-    ttk.Label(form, text='Use your own European GT6 1.22 files and the original model by OUTPISTON.').grid(row=1, columnspan=3, sticky='w', pady=(3, 10))
+    ttk.Label(form, text='Use your GT6 1.22 files and the original model by OUTPISTON. The PS3 FTP lookup uses BCES01893.').grid(row=1, columnspan=3, sticky='w', pady=(3, 10))
     fields = {}
 
     def field(row, key, label, *, folder=False, path=False, initial='', secret=False):

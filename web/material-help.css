@@ -10,3 +10,20 @@
 .materialHelp p { margin: 5px 0; color: #c8d5ce; }
 .materialHelp ol { padding-left: 22px; margin: 10px 0; line-height: 1.55; }
 .materialHelp li + li { margin-top: 5px; }
+
+.issueGuide {
+  margin: 8px 0 0;
+  border: 1px solid #3c514b;
+  border-radius: 6px;
+  background: #172320;
+  color: #dce8e2;
+  overflow-wrap: anywhere;
+}
+.issueGuide > summary { cursor: pointer; padding: 9px 12px; color: #c6e7d8; font-weight: 600; line-height: 1.4; }
+.issueGuide > summary:focus-visible, #troubleshootingTitle:focus-visible { outline: 2px solid #9cebc6; outline-offset: 2px; }
+.issueGuide > ol { margin: 0 12px 13px 34px; padding: 0; max-width: 78ch; font-size: 14px; line-height: 1.55; }
+.issueGuide li + li { margin-top: 7px; }
+.issueGuide strong { color: #edf6f1; }
+.troubleshootingIndex { margin: 28px 0; }
+.troubleshootingIndex h2 { margin: 0 0 12px; }
+header nav:has(#showTroubleshooting) { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }

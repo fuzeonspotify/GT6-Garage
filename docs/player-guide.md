@@ -61,6 +61,13 @@ We recommend making a separate copy of your game save before installing a custom
 
 ## When something looks wrong
 
+Click **Troubleshooting** at the top of **Model tester**, or choose **How it works** in the **Car workshop** sidebar. Click the question that sounds like your problem. The guides are included in the app and work offline.
+
+- **Stuck on “Choose combined baseline”?** Open the guide directly below that button. It shows which folder to pick for a previous build and how to start with stock PDIPFS.
+- **Import stopped?** Read the steps beside the result. They explain how to add a missing texture or .bin file, choose one car from a ZIP, or export a GLB from Blender.
+- **Wheels or driver look wrong?** The wheel guides cover joined tyres, axle spacing and wheels that disappear in a race. The driver guide walks through marking the seat and steering wheel in the top and side views.
+- **Ready to install?** Choose the RPCS3 or PS3 FTP guide after building. Both are also in `README_INSTALL.txt` inside the car ZIP, along with recovery steps. The second-car guide explains which package to keep.
+
 ### When a material stops the import
 
 Look for **How to fix** under the material warning in your model test result or assembled-car check. Click **Show in Parts** to select the affected part and list the parts using its material. In the workshop you can also click **See how to fix it** at the top.

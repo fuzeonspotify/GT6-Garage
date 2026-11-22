@@ -1,5 +1,7 @@
 import {Viewer} from './viewer.js';
 import {materialHelpPanel} from './material-help.js';
+import * as Help from './troubleshooting.js';
+Help.mount(document);
 const $=id=>document.getElementById(id);let token=location.hash.slice(1)||sessionStorage.getItem('garage-token')||'';if(token)sessionStorage.setItem('garage-token',token);history.replaceState(null,'',location.pathname);let project=null,selected=null,currentJob=null,state=null;let planEpoch=0,approvedPlan=null,targetCatalogue=null;
 let navigationEpoch=0,activeUiJob=null,jobBarrier=Promise.resolve(),preparationPending=null,previewUnverifiedContext=null,previewLoadingContext=null;
 let activePage="workshop",tyreProposal=null,tyreProposalEpoch=0,tyreProposalPending=null;
@@ -79,9 +81,18 @@ function invalidateCarPlan(message='Check the build plan for the current project
 const roleLabels={body:'Body detail',paint:'Paint',glass:'Glass',headlight:'Headlight',taillight:'Taillight',brakelight:'Brake light',rim:'Rim',tyre:'Tyre',valve:'Valve',brake_rotor:'Brake rotor (spins)',brake_caliper:'Brake caliper (does not spin)',interior:'Interior',ignore:'Ignore'};
 const cornerRoles=['rim','tyre','valve','brake_rotor','brake_caliper'],wheelCorners=['FL','FR','RL','RR'];
 const viewer=new Viewer($('viewer'),selectPart);for(const [value,label]of Object.entries(roleLabels)){let o=document.createElement('option');o.value=value;o.textContent=label;$('partRole').append(o)}
-function notice(text,success=false){$('notice').textContent=text;$('notice').className='notice'+(success?' success':'');if(success)setTimeout(()=>$('notice').classList.add('hidden'),7000)}
-async function api(url,data,opts={}){let headers={'X-Garage-Token':token,...opts.headers};let method=opts.method||((data!==undefined)?'POST':'GET');let body;if(data!==undefined){headers['Content-Type']='application/json';body=JSON.stringify(data)}if(opts.body){body=opts.body;delete headers['Content-Type'];headers['Content-Type']='application/octet-stream'}let r=await fetch(url,{method,headers,body});if(!r.ok){let j=await r.json().catch(()=>({error:r.statusText}));throw Error(j.error||'Request failed')}if(opts.binary)return r.arrayBuffer();return r.json()}
-async function safe(fn){try{return await fn()}catch(e){notice(e.message);console.error(e)}}
+let noticeTimeout;
+function notice(text,success=false,code){
+ const box=$('notice');
+ clearTimeout(noticeTimeout);
+ box.textContent=text;
+ box.className='notice'+(success?' success':'');
+ const topic=Help.forError(code);
+ if(topic)box.append(Help.panel(topic,true));
+ if(success)noticeTimeout=setTimeout(()=>box.classList.add('hidden'),7000);
+}
+async function api(url,data,opts={}){let headers={'X-Garage-Token':token,...opts.headers};let method=opts.method||((data!==undefined)?'POST':'GET');let body;if(data!==undefined){headers['Content-Type']='application/json';body=JSON.stringify(data)}if(opts.body){body=opts.body;delete headers['Content-Type'];headers['Content-Type']='application/octet-stream'}let r=await fetch(url,{method,headers,body});if(!r.ok){let j=await r.json().catch(()=>({error:r.statusText}));throw Object.assign(new Error(j.error||'Request failed'),{code:j.code})}if(opts.binary)return r.arrayBuffer();return r.json()}
+async function safe(fn){try{return await fn()}catch(e){notice(e.message,false,e.code);console.error(e)}}
 function page(name){activePage=name;renderImportGuide();for(const e of document.querySelectorAll('.page'))e.classList.toggle('hidden',e.id!=='page-'+name);for(const n of document.querySelectorAll('.nav'))n.classList.toggle('active',n.dataset.page===name);$('pageTitle').textContent={workshop:'Car workshop',projects:'My projects',export:'Build & export',help:'How it works'}[name];if(name==='projects')refreshProjects();if(name==='workshop')viewer.invalidate();if(name==='export'){bodyFitViewer?.invalidate();shellViewer?.invalidate()}}
 for(const n of document.querySelectorAll('.nav[data-page]'))n.onclick=()=>page(n.dataset.page);
 async function refresh(){const next=await api('/api/state');if(state&&['car_baseline','car_packer','native_template','package_folder'].some(key=>state[key]!==next[key]))clearBodyFitReview();state=next;$('version').textContent='Desktop preview '+state.version;$('footerVersion').textContent=state.version;$('packagePath').textContent=state.package_folder||'No package selected';$('carBaselinePath').textContent=state.car_baseline||'Not configured';$('carPackerPath').textContent=state.car_packer||'Not configured';renderImportGuide();return state}
@@ -502,6 +513,10 @@ function showShellReview(value){
  if(help)panel.append(materialHelpPanel(help,()=>{
    if(project?.id===value.id&&shellReviewIsCurrent())showMaterialPart(help.part_id);
  }));
+ for(const topic of new Set(value.blockers.filter(item=>!item?.material_help&&
+   !(item?.code==='wheel_fit'&&value.wheel_check)).map(item=>Help.forError(item?.code)).filter(Boolean))){
+  panel.append(Help.panel(topic,true));
+ }
  const totals=value.triangle_dispositions||{};let text=(totals.emit||0).toLocaleString()+' source triangles included · '+(totals.excluded||0).toLocaleString()+' explicitly excluded.';
  if(value.placement)text+=' Body size '+value.placement.scale.toFixed(3)+'×, position '+value.placement.translation_metres.map(v=>v.toFixed(3)).join(', ')+' m.';
  const fit=wheelFitText(value.source_wheel_fit);
@@ -572,6 +587,10 @@ function showWheelCheck(check,assembled){
   rows.append(tr);
  }
  for(const issue of check.messages||[]){const li=document.createElement('li');li.textContent=issue;issues.append(li)}
+ const topic=Help.forWheelCheck(check);
+ const help=$('wheelHowTo');
+ help.replaceChildren();
+ if(topic)help.append(Help.panel(topic,true));
 }
 function wheelFitText(fit){
  if(!fit?.corners?.length)return '';
@@ -880,7 +899,7 @@ async function waitJob(job,onDone){
   }
   $('jobstatus').textContent=status.progress||'Working locally. Your game is not being opened.';
   if(status.state==='complete'){currentJob=null;releaseUiJob(owner);$('jobbar').classList.add('hidden');if(onDone)await onDone(status.result);return status.result}
-  if(status.state==='error'||status.state==='cancelled'){currentJob=null;releaseUiJob(owner);$('jobbar').classList.add('hidden');throw Error(status.error||'Operation cancelled.')}
+  if(status.state==='error'||status.state==='cancelled'){currentJob=null;releaseUiJob(owner);$('jobbar').classList.add('hidden');throw Object.assign(new Error(status.error||'Operation cancelled.'),{code:status.code})}
  }
 }
 async function upload(file){if(!file)return;await flushSettings();const isProject=/\.gt6car$/i.test(file.name);if(file.size>(isProject?532:256)*1024*1024)throw Error(isProject?'Project exceeds its 532 MiB limit.':'Use a model smaller than 256 MiB.');if(!/\.(glb|obj|gltf|fbx|blend|zip|gt6car)$/i.test(file.name))throw Error('Choose GLB, OBJ, glTF, FBX, Blend, a model ZIP or .gt6car.');invalidateCarPlan('Importing a different source. Review its own build plan.',true);let url=file.name.toLowerCase().endsWith('.gt6car')?'/api/import-project':'/api/import';$('notice').classList.add('hidden');let job=await submitJob(url,undefined,{method:'POST',headers:{'X-Filename':encodeURIComponent(file.name)},body:await file.arrayBuffer()});await waitJob(job,loadProject)}
@@ -906,6 +925,7 @@ function showNativeBuildResult(box,result){
   line.textContent=label+' body textures use a maximum edge of '+loading.maximum_texture_edge+' px to fit the tested loading budget.';
   box.append(line);
  }
+ for(const topic of ['installPC','installPS3','keepCars'])box.append(Help.panel(topic));
 }
 function showResult(result){const box=$('exportResult');box.replaceChildren();box.classList.remove('hidden');let h=document.createElement('h2');h.textContent=result.complete_native_package?'Complete native test package':result.path?'Export created':'Package checks passed';box.append(h);let p=document.createElement('p');p.textContent=result.path||((result.files?.length||0)+' payload files verified · '+result.name+' · '+result.title_id+' '+result.game_update);box.append(p);if(result.download){let a=document.createElement('a');a.href=result.download+'?token='+encodeURIComponent(token);a.textContent='Download '+result.path.split(/[\\/]/).pop();a.setAttribute('download','');box.append(a)}if(result.report){let info=document.createElement('p');info.textContent='Native rim asset built: '+result.report.output_triangles.toLocaleString()+' triangles. In-game validation has not been performed. Body and game installation unchanged.';box.append(info)}if(result.complete_native_package)showNativeBuildResult(box,result);if(result.game_ready===false&&!result.complete_native_package){let e=document.createElement('p');e.textContent='This is an editable preparation artifact, not a game installer.';box.append(e)}box.scrollIntoView({block:'nearest',behavior:'smooth'})}
 async function exportAction(url,needsProject=true,expectedSettingsVersion=null){if(needsProject&&!project)throw Error('Import or open a project first.');const context=editState.context,pid=project?.id;await flushSettings(context);if(needsProject&&(editState.context!==context||project?.id!==pid))throw Error('The open project changed. Retry the export for the current project.');if(expectedSettingsVersion!==null&&editState.version!==expectedSettingsVersion)throw Error('Settings changed after the build plan. Check the plan again before building.');let job=await submitJob(url,needsProject?{id:pid}:{});let result=await waitJob(job,r=>{if(needsProject&&(editState.context!==context||project?.id!==pid))return;showResult(r);if(r.complete_native_package)addBaselineAction(job.id)});return result}

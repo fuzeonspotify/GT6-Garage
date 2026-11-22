@@ -43,7 +43,7 @@ def dialog(kind,result):
         if directory:
             try:
                 values={'path':str(find_update(directory))}
-            except GarageError as exc:values={'error':str(exc)}
+            except GarageError as exc:values={'error':str(exc),'code':exc.code}
         atomic_json(Path(result),values);root.destroy();return
     if kind=='profile-folder':p=filedialog.askdirectory(title='Choose the prepared template, previous installation, or stock workspace')
     elif kind in ('package','car-baseline'):p=filedialog.askdirectory(title='Select the built GT6 package (contains package_receipt.json and PatchOut)')

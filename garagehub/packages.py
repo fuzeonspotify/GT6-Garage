@@ -76,18 +76,31 @@ def export_package(folder:Path,output:Path,cancel=None):
     if temp.exists():raise GarageError('A previous partial export exists; choose a new name.')
     instructions=f'''{manifest['name']} — GT6 1.22 / {manifest['title_id']}
 
-Close GT6 and back up your save and previous COMPLETE mod package.
-FTP to /dev_hdd0/game/{manifest['title_id']}/USRDIR/PDIPFS/
-1. Upload every file in Install except K/4D, merging folders.
-2. Wait for all data transfers to finish.
-3. Upload Install/K/4D LAST.
-4. Start GT6. To roll back, restore your previous COMPLETE package.
+Before installing
+Close GT6 and extract this entire car ZIP on your PC. Match the title ID and
+update above to your game. Back up your GT6 save and keep a copy of the
+complete working update or combined mod package you are about to change.
 
-This ZIP contains native game data from your selected local package.
-Do not install on another update/region without a separately validated build.
-Other mods need a combined repack; do not mix archive headers.
-Physical PS3 testing: not performed by this tool.
-No emulator, settings, firmware, account files or save data are included.
+RPCS3 on PC
+1. In RPCS3, right-click Gran Turismo 6 and choose Open Folder >
+   Open Game Data Folder. Open USRDIR, then PDIPFS.
+2. From the extracted Install folder, copy every file except K/4D into
+   PDIPFS, keeping the subfolders. Wait for every copy to finish.
+3. Copy Install/K/4D to PDIPFS/K/4D last. This file activates the new data.
+
+PS3 over FTP
+1. In your FTP client, open the extracted Install folder on the PC side.
+   On the console side open /dev_hdd0/game/{manifest['title_id']}/USRDIR/PDIPFS/
+2. Upload every file in Install except K/4D, merging subfolders. Use binary
+   transfers. Check the queue and retry any failed files before continuing.
+3. Upload Install/K/4D LAST. Its destination is PDIPFS/K/4D.
+
+Check the car and recover an installation
+Start a single-player race and check the car and all four wheels in replay.
+If the game stops loading or you want to undo the installation, close GT6.
+Restore your complete matching backup, copying its data first and K/4D last.
+Restore the matching backed-up game save if needed. To keep earlier cars
+when adding the next one, build from your last working combined package.
 '''
     try:
         with zipfile.ZipFile(temp,'x',zipfile.ZIP_DEFLATED,compresslevel=5) as z:

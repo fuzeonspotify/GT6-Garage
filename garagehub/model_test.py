@@ -69,7 +69,7 @@ class ModelTests:
             sizing='saved_placement' if project.get('stock_placement_mode')=='saved_placement' else 'checked_fit'
             setup=store.shell_setup(project['id'],sizing,template_root=template)
             check=setup['wheel_check']
-            row['wheels']={'set':check['wheel_set'],'corners':len(check['corners']),
+            row['wheels']={'set':check['wheel_set'],'status':check['status'],'corners':len(check['corners']),
                 'excluded_parts':len(setup['exclusions']), 'diameter_ratio':{
                     w['corner']:w['diameter_ratio'] for w in check['corners']}}
             effects=sorted({effect for part in setup.get('finishes',[]) for effect in part['effects']})
@@ -97,6 +97,8 @@ class ModelTests:
                     if 'material_help' in blocker:
                         row['material_help'] = blocker['material_help']
                         break
+                if review['blockers'] and review['blockers'][0].get('code'):
+                    row['code'] = review['blockers'][0]['code']
                 return self._save(row)
             if not template:
                 row.update(stage='source fit',status='needs_game_files',messages=['Source geometry fits the stock hubs. Set up your GT6 files to test the assembled model.'])
@@ -106,6 +108,7 @@ class ModelTests:
             blob,_=build_template_shell_preview(scene,draft,review,template,limit=16000)
             size=int.from_bytes(blob[4:8],'little')
             native=json.loads(blob[16:16+size])['wheel_check']
+            row['wheels']['status']=native['status']
             row['wheels']['visibility']={lod:{corner:{role:round(v['fraction'],3) for role,v in roles.items()}
                 for corner,roles in corners.items()} for lod,corners in native['visibility'].items()}
             row['wheels']['assets']=native['wheel_files']
