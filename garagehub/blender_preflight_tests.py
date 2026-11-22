@@ -46,6 +46,38 @@ def textured_fixture(*, opaque_pixels=False, role=None, different_uv=False, wide
 
 
 class BlenderPreflightTests(unittest.TestCase):
+    def test_direct_player_import_keeps_original_and_replays_material_repairs(self):
+        from .projects import Store
+        from .import_repairs import prepare_player_materials
+        for solid in (True,False):
+            with self.subTest(solid=solid),tempfile.TemporaryDirectory() as d:
+                folder=Path(d)
+                store=Store(folder/'projects')
+                raw=textured_fixture(opaque_pixels=solid,role='body')
+                p=store.create(raw,'Car.glb',stock_replacement=True)
+                work=(store.folder(p['id'])/'source.glb').read_bytes()
+                self.assertEqual((store.folder(p['id'])/'original_input.bin').read_bytes(),raw)
+                model=GLB(work)
+                mat=model.doc['materials'][0]
+                self.assertNotIn('normalTexture',mat)
+                self.assertEqual(mat['alphaMode'],'OPAQUE' if solid else 'BLEND')
+                self.assertEqual(prepare_player_materials(model,model.scene()),(work,[]))
+                self.assertTrue(any('normal map' in r['message'] for r in p['source_metadata']['material_repairs']))
+                saved=folder/'saved.gt6car'
+                store.export(p['id'],saved)
+                reopened=store.import_archive(saved.read_bytes())
+                self.assertEqual(reopened['source_sha256'],p['source_sha256'])
+                self.assertEqual(reopened['source_metadata'],p['source_metadata'])
+
+    def test_different_uvs_keep_original_material_and_name_the_affected_part(self):
+        from .import_repairs import prepare_player_materials
+        raw=textured_fixture(different_uv=True)
+        glb=GLB(raw)
+        prepared,report=prepare_player_materials(glb,glb.scene())
+        self.assertEqual(prepared,raw)
+        self.assertTrue(any(item['action']=='review' and item['part_ids']==['n0p0']
+                            and 'different UVs' in item['message'] for item in report))
+
     def test_native_reader_samples_shelby_size_and_preserves_palette_alpha(self):
         base = Image.new('P', (4268,4268))
         base.putpalette([240,24,32,24,96,220]+[0]*762)

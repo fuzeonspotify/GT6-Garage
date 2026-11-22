@@ -34,7 +34,7 @@ from .mechanical_policy import require_static_compatible
 from .recognition import CORNER_ROLES, axes, infer, _mechanical_names, component_name_role
 from .scene_coordinates import coordinate_settings, COORDINATE_SYSTEM, prepare_scene
 from .util import atomic_json, hash_file, sha256
-from .template_lights import normalize_lighting, lamp_kit, verify_prepared_mounts, PART_PREFIX
+from .template_lights import normalize_lighting, lamp_kit, verify_prepared_mounts, PART_PREFIX, SUPPLIED_ENDS
 from .surface_realization import opaque_two_sided_plan, verify_native_opaque_culling
 from .running_gear import (normalize_running_gear, resolve_running_gear,
                            require_inherited_running_gear)
@@ -43,7 +43,7 @@ from .wheel_check import (check_exclusions, checked_wheel_files, dimensional_che
 
 
 SCHEMA = 2
-ALGORITHM_REVISION = 6
+ALGORITHM_REVISION = 7
 STATIC_ROLES = frozenset(('body', 'paint', 'glass', 'headlight', 'taillight',
                           'brakelight', 'interior'))
 MAXIMUM_POSITION_METRES = 12.
@@ -516,7 +516,16 @@ def review_shell(scene, project, placement, dispositions=None, lighting=None, ru
             if not np.isfinite(points).all() or np.max(np.abs(points)) > MAXIMUM_POSITION_METRES:
                 _fail('Placed body geometry exceeds the current 12-metre coordinate bound.', 'shell_placement')
             mapped[part.id] = points
-        if light_settings['mode'] == 'source':
+        supplied = SUPPLIED_ENDS[light_settings['mode']]
+        duplicate_roles = set()
+        if 'front' in supplied:
+            duplicate_roles.add('headlight')
+        if 'rear' in supplied:
+            duplicate_roles.update(('taillight', 'brakelight'))
+        if any(row['disposition'] == 'emit' and row['role'] in duplicate_roles for row in coverage):
+            _fail('Exclude existing source lamp surfaces with a reason before choosing supplied lights '
+                  'at the same end, or keep the model lights at that end.', 'shell_lamps')
+        if 'front' not in supplied:
             headlights = [mapped[row['id']] for row in coverage
                           if row['disposition'] == 'emit' and row['role'] == 'headlight']
             if not headlights:
@@ -524,12 +533,9 @@ def review_shell(scene, project, placement, dispositions=None, lighting=None, ru
             head = np.vstack(headlights)
             if not (np.any(head[:, 0] < 0) and np.any(head[:, 0] > 0)):
                 _fail('Placed source headlamps must contain both left and right emitting surfaces.', 'shell_lamps')
+        if 'rear' not in supplied:
             if not any(row['disposition'] == 'emit' and row['role'] == 'taillight' for row in coverage):
                 _fail('Assign source running/brake tail-lamp surfaces or choose supplied lights.', 'shell_lamps')
-        elif any(row['disposition'] == 'emit' and row['role'] in
-                 ('headlight', 'taillight', 'brakelight') for row in coverage):
-            _fail('Exclude existing source lamp surfaces with a reason before choosing supplied lights, '
-                  'or use the model lights to avoid duplicate lamps.', 'shell_lamps')
         assembled, assembly_project, generated = _assembled(
             scene, project, coverage, matrix, translation, light_settings)
         fit = {'fit_method': 'explicit_uniform_static_body_placement',
@@ -566,11 +572,14 @@ def review_shell(scene, project, placement, dispositions=None, lighting=None, ru
         budgets = {}
         mount_checks = {}
         for lod in ('hq', 'race'):
-            parts, _, _ = prepare_parts(assembled, assembly_project['inspection'], lod,
+            parts, preparation, _ = prepare_parts(assembled, assembly_project['inspection'], lod,
                 fit_solution=(matrix, translation, report))
             budgets[lod] = {'triangles': sum(len(p['faces']) for p in parts),
                             'vertices': sum(len(p['positions']) for p in parts)}
             mount_checks[lod] = verify_prepared_mounts(parts, generated)
+            mount_checks[lod]['protected_triangles']=sum(row.get('protected_lamp_mount_triangles',0) for row in preparation)
+            budgets[lod]['textured_reductions']=[{'id':row['id'],**row['textured_lod']} for row in preparation
+                                                if row.get('textured_lod') and row['reduced']]
         if needs_native_check(report) and check['messages']:
             # The body transform can still be rendered for a diagnostic preview.
             report['ready_for_candidate'] = False
@@ -685,7 +694,8 @@ def check_shell_body_streams(scene,project,review,template_root,cancel=None):
         verify_prepared_mounts(parts,generated)
         stream=report['body_stream']
         result[lod]={'triangles':report['static_triangles'],'used_stream_bytes':stream['used_cpu_bytes'],
-                     'available_stream_bytes':stream['main_cpu_bytes_before'],'body_bytes':report['texture_loading']['body_bytes']}
+                     'available_stream_bytes':stream['main_cpu_bytes_before'],'body_bytes':report['texture_loading']['body_bytes'],
+                     'lamp_states_verified':all(item['stored_lamp_states_verified'] for item in report['light_checks'])}
     return result
 
 

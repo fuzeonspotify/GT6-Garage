@@ -136,7 +136,7 @@ def poll_worker():
     folder = Path(_folder.name)
     try:
         if code or not (folder/'report.json').is_file():
-            raise ValueError('Select GT6Garage.exe from the complete 0.4.20 or newer Windows download, then check again.')
+            raise ValueError('Select GT6Garage.exe from the complete 0.5.0 or newer Windows download, then check again.')
         result = json.loads((folder/'report.json').read_bytes())
         if result.get('schema')!=1:
             raise ValueError('Update the Blender add-on and GT6 Garage together.')
@@ -170,7 +170,7 @@ class GT6_OT_check(bpy.types.Operator):
         state = context.window_manager.gt6_prep
         exe = application(context)
         if not exe or not exe.is_file() or exe.name.lower()!='gt6garage.exe':
-            self.report({'ERROR'}, 'Open GT6 Garage 0.4.20 once, or choose its GT6Garage.exe in this panel.')
+            self.report({'ERROR'}, 'Open GT6 Garage 0.5.0 once, or choose its GT6Garage.exe in this panel.')
             return {'CANCELLED'}
         choices = _choices.copy()
         clear_cache()

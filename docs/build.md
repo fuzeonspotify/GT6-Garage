@@ -4,7 +4,7 @@ The viewer, converter, template authoring stages, native model readers/writers, 
 
 ## Run from source
 
-The public Windows build uses **64-bit Python 3.14**, **NumPy 2.5.5**, **Pillow 13.0.0**, **fast-simplification 0.2.0** and **PyInstaller 6.22.3**. Python’s standard Windows Tcl/Tk installation supplies the file pickers. For reproducing the eight historical template hashes use **Blender 5.2.0**. The general model importer requires Blender only for the formats indicated in the player guide.
+The public Windows build uses **64-bit Python 3.14**, **NumPy 2.5.5**, **Pillow 13.0.0**, **fast-simplification 0.2.0**, **meshoptimizer 0.2.30a0** and **PyInstaller 6.22.3**. Python’s standard Windows Tcl/Tk installation supplies the file pickers. When installing from source on Windows, install the Visual Studio Build Tools with the Desktop development with C++ workload to compile the pinned meshoptimizer package. The Windows player ZIP includes the compiled library. For reproducing the eight historical template hashes use **Blender 5.2.0**. The general model importer requires Blender only for the formats indicated in the player guide.
 
 ```powershell
 git clone https://github.com/fuzeonspotify/GT6-Garage.git

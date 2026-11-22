@@ -112,6 +112,69 @@ def supplied_review(scene, project, placement=None, dispositions=None, lighting=
 
 
 class TemplateLightsTests(unittest.TestCase):
+    def test_textured_race_reduction_preserves_attributes_borders_and_mount(self):
+        from dataclasses import replace
+        from .textured_lod import reduce_textured_part
+        from .surface_guards import boundary_edges
+        side=23
+        y,x=np.mgrid[:side,:side]
+        xy=np.column_stack((x.ravel(),y.ravel()))/side
+        points=np.column_stack((xy,np.zeros(len(xy))))
+        normals=np.tile([0.,0.,1.],(len(points),1))
+        starts=(y[:-1,:-1]*side+x[:-1,:-1]).ravel()
+        faces=np.vstack([np.column_stack((starts,starts+1,starts+side+1)),
+                         np.column_stack((starts,starts+side+1,starts+side))])
+        base=GLB(bare_body_glb()).scene().parts[0]
+        uv=xy*np.array([2.,-1.])+[.125,.25]
+        part=replace(base,positions=points,normals=normals,uv=uv,indices=faces)
+        contact=len(starts)//2+side//2
+        p,n,u,f,report=reduce_textured_part(part,200,{contact})
+        self.assertLess(len(f),len(faces))
+        self.assertLessEqual(report['relative_attribute_error'],report['relative_error_limit'])
+        lookup={tuple(v):i for i,v in enumerate(points)}
+        original=np.array([lookup[tuple(v)] for v in p])
+        np.testing.assert_array_equal(n,normals[original])
+        np.testing.assert_array_equal(u,uv[original])
+        restored=original[f]
+        self.assertIn(tuple(faces[contact]),map(tuple,restored))
+        self.assertEqual(set(map(tuple,boundary_edges(faces))),set(map(tuple,boundary_edges(restored))))
+
+    def test_mixed_light_sets_keep_authored_end_and_generate_only_missing_pair(self):
+        from .shell_setup import suggest_setup
+        for missing, removed, expected in [('rear',[3],'supplied_rear'),('front',[1,2],'supplied_front')]:
+            with self.subTest(missing=missing):
+                scene, project = shell_fixture()
+                project['assembly_mode']='template_shell'
+                excluded={}
+                for idx in removed:
+                    pid=scene.parts[idx].id
+                    project['overrides'][pid]={'role':'ignore'}
+                    excluded[pid]={'disposition':'excluded','reason':'Removed by fixture author'}
+                project['inspection']=infer(scene,'+Z',project['overrides'])
+                project['template_shell_settings']={'dispositions':excluded}
+                proposal=suggest_setup(scene,project,'keep_size')
+                settings=proposal['changes']['template_shell_settings']
+                self.assertEqual(settings['lighting']['mode'],expected)
+                self.assertEqual(proposal['lights'][missing]['origin'],'supplied')
+                review=supplied_review(scene,project,dispositions=excluded,lighting=settings['lighting'])
+                self.assertTrue(review['ready_for_candidate'],review['blockers'])
+                generated=review['generated_lighting']
+                self.assertEqual({m['name'] for m in generated['mounts']},{missing+'_left',missing+'_right'})
+                self.assertEqual(len(generated['generated_parts']),4)
+                self.assertEqual(review['lamp_mount_checks']['race']['centres_checked'],2)
+                self.assertEqual(supplied_review(scene,project,dispositions=excluded)['blockers'][0]['code'],'shell_lamps')
+
+    def test_one_sided_authored_headlight_reaches_parts_review(self):
+        from .shell_setup import suggest_setup
+        scene,project=shell_fixture()
+        pid=scene.parts[1].id
+        project.update(assembly_mode='template_shell',overrides={pid:{'role':'ignore'}},
+                       template_shell_settings={'dispositions':{pid:{'disposition':'excluded','reason':'Removed by fixture author'}}})
+        project['inspection']=infer(scene,'+Z',project['overrides'])
+        setup=suggest_setup(scene,project,'keep_size')
+        self.assertEqual(setup['lights']['front']['origin'],'review')
+        self.assertEqual(setup['changes']['template_shell_settings']['lighting']['mode'],'source')
+
     def test_bare_source_gets_separately_accounted_supplied_lamps(self):
         scene, project = bare_shell_fixture()
         self.assertEqual(len(scene.parts), 1)

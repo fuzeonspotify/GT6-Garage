@@ -155,6 +155,17 @@ def _serialize_body(scene,template,lod,cancel,raw,parts,edge):
         need(sha256(cpu[row['vertex_pointer']:row['vertex_pointer']+row['vertex_bytes']])==row['vertex_sha256'] and sha256(cpu[row['index_pointer']:row['index_pointer']+row['index_bytes']])==row['index_sha256'],'Streamed geometry failed independent decompression.')
     # Independent shape data check (not the builder's mutable buffers).
     parsed=MDL3(data);parsed.validate()
+    for check in checks:
+        mid=check['model']
+        entry=parsed.u32(0x30)+mid*48
+        offset=3*(len(opaque)+(1 if mid==5 else 0))
+        need(offset+len(light)<=parsed.u32(entry+28),'Stored lamp commands leave their model.')
+        stored=parsed.span(parsed.u32(entry+24)+offset,len(light))
+        for night in (0,1):
+            for brake in (0,1):
+                need(evaluate(stored,night,brake)==check['lamp_states'][f'night{night}_brake{brake}'],
+                     'The saved car body failed a headlight or brake-light switch check.')
+        check['stored_lamp_states_verified']=True
     for row in report['added_shapes']:
         if row['streamed']:continue
         sp=parsed.u32(0x38)+row['id']*48;stride=parsed.fvfs()[parsed.s16(sp+2)]['stride'];vp=parsed.u32(sp+12);ip=parsed.u32(sp+24)

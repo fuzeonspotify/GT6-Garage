@@ -14,8 +14,10 @@ import numpy as np
 from .errors import GarageError
 
 
-KIT_REVISION = 2
+KIT_REVISION = 3
 PART_PREFIX = '__gt6_supplied_lamp_'
+SUPPLIED_ENDS = {'source': (), 'supplied_front': ('front',),
+                 'supplied_rear': ('rear',), 'supplied': ('front', 'rear')}
 RATIOS = {'front_height_ratio': .42, 'rear_height_ratio': .50,
           'half_spacing_ratio': .32}
 
@@ -23,14 +25,14 @@ RATIOS = {'front_height_ratio': .42, 'rear_height_ratio': .50,
 def normalize_lighting(value=None):
     if value is None:
         value = {'mode': 'source'}
-    if not isinstance(value, Mapping) or value.get('mode') not in ('source', 'supplied'):
+    if not isinstance(value, Mapping) or not isinstance(value.get('mode'), str) or value['mode'] not in SUPPLIED_ENDS:
         raise GarageError('Choose the model lights or the supplied light kit.', 'shell_lighting')
     mode = value['mode']
     allowed = {'mode'} if mode == 'source' else {'mode', *RATIOS}
     if set(value)-allowed:
         raise GarageError('Unknown supplied-light setting.', 'shell_lighting')
     result = {'mode': mode}
-    if mode == 'supplied':
+    if SUPPLIED_ENDS[mode]:
         for key, default in RATIOS.items():
             number = value.get(key, default)
             if (isinstance(number, (bool, np.bool_)) or
@@ -237,11 +239,12 @@ def _mount_pair(geometry, end, ratio, spacing):
 
 
 def find_lamp_settings(scene, coverage, matrix, translation, lighting):
-    """Find actual mounts for both ends, starting with the player's settings."""
+    """Search only the ends that need a pair, starting at the player's settings."""
     original = normalize_lighting(lighting)
     if original['mode'] == 'source':
         return original
     geometry = _mount_geometry(scene, coverage, matrix, translation)
+    ends = SUPPLIED_ENDS[original['mode']]
 
     def nearest(value, low, high):
         grid = {i / 1000 for i in range(10*low, 10*high+1, 25)}
@@ -255,12 +258,13 @@ def find_lamp_settings(scene, coverage, matrix, translation, lighting):
         # Minimize the summed squared movement of the four lamp centres in
         # metres. Keeping the original spacing must not force both pairs to
         # the bottom of the body when a small lateral move would suffice.
-        cost = 2*(width*(spacing-original['half_spacing_ratio']))**2
+        cost = len(ends)*(width*(spacing-original['half_spacing_ratio']))**2
         if cost >= best_cost:
             break
-        result = {'mode':'supplied', 'half_spacing_ratio':spacing}
-        for end in ('front', 'rear'):
+        result = {**original, 'half_spacing_ratio':spacing}
+        for end in ends:
             key = end+'_height_ratio'
+            del result[key]
             for ratio in nearest(original[key], 15, 80):
                 movement = (height*(ratio-original[key]))**2
                 if cost+movement >= best_cost:
@@ -280,7 +284,7 @@ def find_lamp_settings(scene, coverage, matrix, translation, lighting):
             best, best_cost = result, cost
     if best is not None:
         return best
-    raise GarageError('No pair of front and rear lamp mounts passed the surface checks '
+    raise GarageError('No pair of '+' and '.join(ends)+' lamp mounts passed the surface checks '
                       'at the sampled positions. Adjust the lamp settings or supply '
                       'authored lamp surfaces.', 'shell_light_mount')
 
@@ -288,12 +292,13 @@ def find_lamp_settings(scene, coverage, matrix, translation, lighting):
 def lamp_kit(scene, coverage, matrix, translation, lighting):
     """Return deterministic native-coordinate parts and explicit generated ownership."""
     settings = normalize_lighting(lighting)
-    if settings['mode'] != 'supplied':
+    ends = SUPPLIED_ENDS[settings['mode']]
+    if not ends:
         return [], {'mode': 'source', 'generated_parts': [], 'generated_triangles': 0}
     geometry = _mount_geometry(scene, coverage, matrix, translation)
     bounds, _, center, _, _, _ = geometry
     parts, mounts, half_depths = [], [], []
-    for end in ('front', 'rear'):
+    for end in ends:
         generated, pair, depths = _mount_pair(geometry, end, settings[end+'_height_ratio'],
                                               settings['half_spacing_ratio'])
         parts.extend(generated)
@@ -304,7 +309,7 @@ def lamp_kit(scene, coverage, matrix, translation, lighting):
                 or not np.isfinite(part['normals']).all()):
             raise GarageError('Supplied lamps exceed the finite native coordinate range.',
                               'shell_light_mount')
-    return parts, {'mode': 'supplied', 'kit_revision': KIT_REVISION,
+    return parts, {'mode': settings['mode'], 'kit_revision': KIT_REVISION,
         'ownership': 'generated_original_lamp_kit', 'settings': settings,
         'body_mount_bounds_metres': bounds.tolist(), 'mounts': mounts,
         'mount_half_check': {'passed': True, 'axis': 'native_z',
@@ -318,7 +323,8 @@ def lamp_kit(scene, coverage, matrix, translation, lighting):
         'generated_triangles': sum(len(p['faces']) for p in parts),
         'source_triangle_count_changed': False,
         'native_emitter_recipe': 'shared_headlamp_running_brake_switches',
-        'projectors': 'fit_existing_native_projectors_to_generated_front_lens_surfaces',
+        'projectors': ('fit_existing_native_projectors_to_generated_front_lens_surfaces'
+                       if 'front' in ends else 'fit_existing_native_projectors_to_source_front_lens_surfaces'),
         'runtime_verified': False,
         'limits': ['Axis-aligned fixed light kit; no turn signals, reverse lamps or damage animation.',
                    'Mounting intersections are geometric evidence, not native lighting or game visibility acceptance.']}
@@ -326,14 +332,14 @@ def lamp_kit(scene, coverage, matrix, translation, lighting):
 
 def verify_prepared_mounts(prepared, receipt):
     """A reduced LOD must still support the exact reviewed generated housings."""
-    if receipt['mode'] != 'supplied':
+    if receipt['mode'] == 'source':
         return {'required': False}
     surfaces = [(part['id'], part['positions'][part['faces']]) for part in prepared
                 if part['role'] in ('body', 'paint') and not part['id'].startswith(PART_PREFIX)]
     maximum = 0.
     for mount in receipt['mounts']:
         direction = mount['outward_native_z']
-        for sample in mount['mount_samples']:
+        for sample in [*mount['mount_samples'], mount['center_mount_sample']]:
             x, y, z = sample['position_metres']
             current = _ray(surfaces, x, y, direction)
             if current is None:
@@ -346,5 +352,6 @@ def verify_prepared_mounts(prepared, receipt):
                                   '1.5 mm. Use a lower-detail source or authored lights.',
                                   'shell_light_mount')
     return {'required': True, 'passed': True, 'samples': sum(len(m['mount_samples']) for m in receipt['mounts']),
+            'centres_checked': len(receipt['mounts']),
             'maximum_surface_shift_metres': maximum, 'maximum_allowed_shift_metres': .0015,
             'scope': 'Emitted LOD attachment surface, not collision or game clearance.'}

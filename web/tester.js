@@ -84,6 +84,38 @@ function renderRow(row) {
     else sessionStorage.removeItem('garage-test-part');
     location.href='/';
   }
+  if(row.lights || row.material_repairs?.length){
+    const repairs=element('details');
+    repairs.append(element('summary','Lights and automatic fixes'));
+    for(const [end,lights] of Object.entries(row.lights||{})){
+      repairs.append(element('h4',end==='front'?'Front lights':'Rear lights'),element('p',lights.message));
+      for(const part of lights.parts){
+        const label=part.name+' · '+part.material;
+        repairs.append(row.project_id?button(label,()=>openWorkshop(part.id)):element('span',label));
+        if(part.reason)repairs.append(element('small',part.reason,'detail'));
+      }
+    }
+    if(row.lamp_mount_checks?.hq?.passed&&row.lamp_mount_checks?.race?.passed){
+      const mm=Math.max(...['hq','race'].map(lod=>row.lamp_mount_checks[lod].maximum_surface_shift_metres))*1000;
+      repairs.append(element('p','Supplied mounts passed on both the garage and race bodies. Largest movement: '+mm.toFixed(2)+' mm.'));
+    }
+    if(row.native_body?.hq?.lamp_states_verified&&row.native_body?.race?.lamp_states_verified)
+      repairs.append(element('p','All four headlight and brake switch combinations passed in both native body files.'));
+    if(row.material_repairs?.length){
+      const list=element('ul');
+      for(const repair of row.material_repairs){
+        const item=element('li',(repair.action==='review'?'Review · ':'Fixed · ')+repair.material+' — '+repair.message);
+        if(row.project_id&&repair.part_ids?.length)item.append(' ',button('Show in Parts',()=>openWorkshop(repair.part_ids[0])));
+        list.append(item);
+      }
+      repairs.append(list);
+    }
+    for(const [lod,parts] of Object.entries(row.detail_reductions||{})){
+      const removed=parts.reduce((n,p)=>n+p.source_triangles-p.output_triangles,0);
+      repairs.append(element('p',(lod==='hq'?'Garage':'Race')+' body · simplified '+parts.length+' textured parts by '+removed.toLocaleString()+' triangles to fit the game.'));
+    }
+    card.append(repairs);
+  }
   if(row.material_help){
     const part=row.material_help.part_id;
     card.append(materialHelpPanel(row.material_help,row.project_id?()=>openWorkshop(part):null));

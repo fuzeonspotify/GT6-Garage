@@ -62,6 +62,7 @@ class ModelTests:
                 raise GarageError('Open a saved project in Car workshop. To start a model test, choose its 3D model file.')
             project = self.app.open_player_file(raw,name,cancel)
             row.update(project_id=project['id'],prepared_sha256=project['source_sha256'],parts=project['part_count'])
+            row['material_repairs']=project.get('source_metadata',{}).get('material_repairs',[])
             row['stage']='wheel placement'
             self.app.progress('Measuring four hubs on '+row['file'])
             store=self.app.store
@@ -69,6 +70,7 @@ class ModelTests:
             sizing='saved_placement' if project.get('stock_placement_mode')=='saved_placement' else 'checked_fit'
             setup=store.shell_setup(project['id'],sizing,template_root=template)
             check=setup['wheel_check']
+            row['lights']=setup['lights']
             row['wheels']={'set':check['wheel_set'],'status':check['status'],'corners':len(check['corners']),
                 'excluded_parts':len(setup['exclusions']), 'diameter_ratio':{
                     w['corner']:w['diameter_ratio'] for w in check['corners']}}
@@ -91,6 +93,10 @@ class ModelTests:
                    'installation':{'mode':'new_entry','replace_car_id':None}}
             row['stage']='body preparation'
             review=review_shell(scene,draft,settings['placement'],settings['dispositions'],settings['lighting'],settings['running_gear'])
+            if review.get('lamp_mount_checks'):
+                row['lamp_mount_checks']=review['lamp_mount_checks']
+            row['detail_reductions']={lod:data['textured_reductions'] for lod,data in review.get('prepared_budgets',{}).items()
+                                      if data.get('textured_reductions')}
             if not review['available']:
                 row['messages']=component_messages(review,project)
                 row['blocker_codes']=[b.get('code') for b in review['blockers']]

@@ -49,7 +49,7 @@ const guides = {
     title: 'Garage can’t find four tyres',
     steps: [
       'In **Car workshop**, check **Front direction** and **Source up axis**. Left and right follow the seated driver’s view facing forward.',
-      'Open **Build & export → Select source tyres by hand**. At each corner choose the complete outer rubber tyre or tread. Click **Check wheel fit**, inspect the four assignments, then **Apply to preview**.',
+      'Open **Build & export → Select source tyres by hand**. At each corner choose the complete outer rubber tyre or tread. Click **Check wheels, lights & parts**, inspect the four assignments, then **Apply to preview**.',
       'If all four tyres share one component containing only rubber, select it in **Parts**, set **Component type → Tyre**, then use **Find four tyre corners in this group**. Review the proposed corners before applying.',
       'For a body with its wheels already removed, choose **Toyota Supra RZ ’97 · place a wheel-free body** and line up the arches with the supplied wheels. If the rubber and body are fused together, separate them in a copy of the model before exporting.'
     ]
@@ -59,7 +59,7 @@ const guides = {
     steps: [
       'Read the failing corner in **Wheel fit**. Check the source tyre pick and **Front direction**. If the whole model looks tiny or huge, check **Metres per source unit**. Use **0.01** for centimetres or **0.001** for millimetres.',
       'If you know the distance between the front and rear axle centres, enter it in **Reference wheelbase (m)** and click **Set units from wheelbase** after reviewing the tyres.',
-      'To use the game tyre diameter, choose **Toyota Supra RZ ’97 · GT6 stock size**. Choose **Find a compatible fit automatically → Check wheel fit**. Apply the placement, then check the assembled car from the side and top.',
+      'To use the game tyre diameter, choose **Toyota Supra RZ ’97 · GT6 stock size**. Choose **Find a compatible fit automatically → Check wheels, lights & parts**. Apply the placement, then check the assembled car from the side and top.',
       'If all four hubs cannot line up at the same body scale, check the model’s axle spacing and width in your 3D editor. Changing tyre diameter alone cannot move the GT6 hubs.'
     ]
   },

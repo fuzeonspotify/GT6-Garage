@@ -14,7 +14,7 @@ from .assembly_settings import assembly_mode, saved_shell_decision, shell_status
 from .scene_coordinates import coordinate_settings,coordinate_description,prepare_scene,COORDINATE_SYSTEM
 from .util import atomic_json,atomic_bytes,read_json,clean_name,safe_rel,sha256,hash_file,MAX_MODEL_BYTES,MAX_PROJECT_BYTES,unique_path
 
-PREPARATION_REVISION=4
+PREPARATION_REVISION=5
 MAX_PROJECT_METADATA_BYTES=16*1024**2
 
 def _serial_preparation(method):
@@ -44,7 +44,16 @@ class Store:
     def create(self,raw:bytes,filename='car.glb',cancel=None,*,checked_wheels=False,stock_replacement=False,wheel_defaults=None):
         from .model_inputs import prepare_model
         original=raw;raw,source_metadata=prepare_model(raw,filename)
-        scene=GLB(raw).scene(cancel);pid=uuid.uuid4().hex;folder=self.root/pid
+        glb=GLB(raw);scene=glb.scene(cancel);pid=uuid.uuid4().hex;folder=self.root/pid
+        if stock_replacement:
+            from .import_repairs import prepare_player_materials, REVISION
+            prepared,repairs=prepare_player_materials(glb,scene,cancel)
+            if repairs:
+                source_metadata['material_repairs']=repairs
+                source_metadata['material_preparation_revision']=REVISION
+            if prepared!=raw:
+                raw=prepared;scene=GLB(raw).scene(cancel)
+                source_metadata['normalized_sha256']=scene.digest
         # Finish parsing before making a persistent project; source remains unchanged.
         name=clean_name(Path(filename.replace('\\','/')).stem)
         extra=scene.document.get('asset',{}).get('extras',{});extra=extra if isinstance(extra,dict) else {}
@@ -553,6 +562,16 @@ class Store:
                 if metadata.get('source_sha256')!=sha256(original):raise GarageError('Original source provenance does not match.')
                 from .model_inputs import prepare_model
                 rebuilt,_=prepare_model(original,metadata['source_filename'])
+                if 'material_preparation_revision' in metadata:
+                    from .import_repairs import prepare_player_materials, REVISION
+                    if type(metadata['material_preparation_revision']) is not int or metadata['material_preparation_revision']!=REVISION:
+                        raise GarageError('This project needs a compatible material preparation version.')
+                    glb=GLB(rebuilt)
+                    rebuilt,repairs=prepare_player_materials(glb,glb.scene())
+                    if repairs!=metadata.get('material_repairs'):
+                        raise GarageError('The archived material repairs do not match the original model.')
+                elif 'material_repairs' in metadata:
+                    raise GarageError('The archived material repairs need their preparation version.')
                 if sha256(rebuilt)!=sha256(source):raise GarageError('The archived original does not reproduce its normalized model.')
             elif 'original_input.bin' in names:raise GarageError('Original input has no source provenance metadata.')
             new=self.create(source,'normalized.glb')

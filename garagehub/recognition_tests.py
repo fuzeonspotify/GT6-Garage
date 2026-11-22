@@ -51,6 +51,29 @@ def by_id(report):
 
 
 class RecognitionTests(unittest.TestCase):
+    def test_mirrored_light_clusters_require_a_unique_pair_and_respect_tags(self):
+        from .template_shell_independent_tests import wheel_free_glb
+        from .glb import GLB
+        scene=GLB(wheel_free_glb()).scene()
+        pair=scene.parts[1:3]
+        for part in pair:
+            part.extras={};part.name='LampCluster'
+        self.assertTrue(all(by_id(infer(scene))[part.id].get('paired_lens') for part in pair))
+        pair[1].extras={'gt6_role':'glass'}
+        self.assertFalse(any(row.get('paired_lens') for row in infer(scene)['parts']))
+        pair[1].extras={};pair[1].name='PoliceLightBar'
+        self.assertFalse(any(row.get('paired_lens') for row in infer(scene)['parts']))
+
+    def test_dcc_part_labels_and_stationary_hardware(self):
+        from .recognition import component_name_role
+        cases=[('HeadLamp_L.002','Lens','headlight'),('Lamp_Rear_R','Lens','taillight'),
+               ('CHMSL','Red','brakelight'),('wheelArch_L','tyre_rubber','body'),
+               ('HeadlightBezel','Chrome','body'),('LightBar','headlight','body'),
+               ('FrontIndicator','glass','body'),('SteeringWheel','rubber','interior'),
+               ('rim_FL','Alloy','rim'),('wiper_L.001','rubber','body')]
+        for name, material, expected in cases:
+            with self.subTest(name=name):
+                self.assertEqual(component_name_role(name,material),expected)
     def test_authored_non_tyres_never_seed_axle_centres(self):
         for role in ('ignore','body','rim','valve','paint','interior'):
             with self.subTest(role=role):

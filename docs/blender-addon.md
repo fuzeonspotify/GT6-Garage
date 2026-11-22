@@ -4,8 +4,8 @@ The **GT6 Garage** sidebar checks the car you have open in Blender, prepares a s
 
 ## Install once
 
-1. Extract **GT6 Garage 0.4.20** or newer for Windows. Double-click **GT6Garage.exe** once so Blender can find your copy.
-2. In Blender 4.2 or newer, open **Edit → Preferences → Add-ons**. Open the menu in the upper right, choose **Install from Disk**, and select **GT6-Garage-Blender-1.0.1.zip** from the extracted Garage folder. Give Blender the add-on ZIP itself. Enable **GT6 Garage** if needed.
+1. Extract **GT6 Garage 0.5.0** or newer for Windows. Double-click **GT6Garage.exe** once so Blender can find your copy.
+2. In Blender 4.2 or newer, open **Edit → Preferences → Add-ons**. Open the menu in the upper right, choose **Install from Disk**, and select **GT6-Garage-Blender-1.1.0.zip** from the extracted Garage folder. Give Blender the add-on ZIP itself. Enable **GT6 Garage** if needed.
 3. In the 3D Viewport, press **N** and click the **GT6 Garage** tab. If the panel asks for the application, use its folder picker to choose **GT6Garage.exe**.
 
 ## Check a car
@@ -32,6 +32,8 @@ The **GT6 Garage** sidebar checks the car you have open in Blender, prepares a s
 Open Garage 0.4.20 or newer and choose the saved GLB again to create a fresh test result. Earlier versions can show this warning for a 4268 × 4268 image. The current native converter accepts an embedded image of up to 67,108,864 pixels (8192 × 8192 for a square image) and samples it at game resolution. An image over that limit needs resizing in Blender. For a separate normal-map warning, use **Check & prepare car → Save checked GLB → Copy checked file path** to select the baked copy.
 
 ## Wheels, lamps and the animated driver
+
+The check lists the front and rear lamps separately and names the meshes it recognizes. Select a lamp finding and click **Select affected object** to inspect it. On a separate emitting mesh, use **Mark selected mesh** to correct its role, then run **Check & prepare car** again. Garage can supply the missing end if your model has only headlights or only rear lamps. [Preview the four light states](lights-and-repairs.md)
 
 For a separate tyre mesh, select it, choose **Tyre** and its corner, and click **Mark selected mesh**. Left and right follow the seated driver’s view. This button intentionally adds a role tag to the selected Blender object and supports **Undo**. You can also tag a separate rim or lamp. Separate mixed moving and stationary surfaces before tagging them.
 

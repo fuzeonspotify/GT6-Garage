@@ -7,6 +7,9 @@ const vm=require('node:vm');
 const crypto=require('node:crypto');
 const sourcePath=process.argv[2]||require('node:path').join(__dirname,'../web/app.js');
 const source=fs.readFileSync(sourcePath,'utf8');
+const backendPath=require('node:path').join(__dirname,'../garagehub/template_shell.py');
+const shellRevision=fs.existsSync(backendPath)
+ ? Number(fs.readFileSync(backendPath,'utf8').match(/^ALGORITHM_REVISION = (\d+)$/m)[1]) : 7;
 const clone=value=>JSON.parse(JSON.stringify(value));
 const deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no});return {promise,resolve,reject}};
 const tick=()=>new Promise(setImmediate);
@@ -117,7 +120,7 @@ function environment(){
   if(url==='/api/template-shell-review'){
    const previous=clone(records.get(data.id)),gate=shellReviewGate;shellReviewGate=null;if(gate)await gate.promise;
    const options=previous.template_shell_settings,gear=shellGearPlan(options.running_gear);
-   return response({schema:2,algorithm_revision:6,scope:'template_shell_developer_review',id:data.id,available:gear.ready,ready_for_candidate:gear.ready,within_profile_limits:gear.ready,preview_available:gear.ready,review_digest:gear.ready?'d'.repeat(64):null,source:gear.ready?{source_sha256:previous.source_sha256}:null,placement:clone(options.placement),lighting:clone(options.lighting),running_gear:clone(gear.requested),running_gear_plan:gear,reference:gear.ready?shellReference(gear):null,blockers:clone(gear.blockers),triangle_dispositions:{emit:previous.triangles,excluded:0},preview_parts:[{id:'body',role:'body',moves_with_body:true},{id:'native_FL',role:'tyre',moves_with_body:false}],physics_changed:false,source_geometry_changed:false,runtime_verified:false,...clone(shellReportOverride)});
+   return response({schema:2,algorithm_revision:shellRevision,scope:'template_shell_developer_review',id:data.id,available:gear.ready,ready_for_candidate:gear.ready,within_profile_limits:gear.ready,preview_available:gear.ready,review_digest:gear.ready?'d'.repeat(64):null,source:gear.ready?{source_sha256:previous.source_sha256}:null,placement:clone(options.placement),lighting:clone(options.lighting),running_gear:clone(gear.requested),running_gear_plan:gear,reference:gear.ready?shellReference(gear):null,blockers:clone(gear.blockers),triangle_dispositions:{emit:previous.triangles,excluded:0},preview_parts:[{id:'body',role:'body',moves_with_body:true},{id:'native_FL',role:'tyre',moves_with_body:false}],physics_changed:false,source_geometry_changed:false,runtime_verified:false,...clone(shellReportOverride)});
   }
   if(url.startsWith('/api/template-shell-preview/')){
    const gate=shellPreviewGate;shellPreviewGate=null;if(gate)await gate.promise;

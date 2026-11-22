@@ -73,6 +73,9 @@ def _material_fixes(glb, images, index, parts, rows, choice, report):
     prims = [_primitive(glb.doc, p) for p in parts]
     tags = {p.extras.get('gt6_role') for p in parts}
     hints = [p.extras.get('gt6_role') or component_name_role(p.name, mat.get('name','')) for p in parts]
+    for i,row in enumerate(rows):
+        if row.get('paired_lens'):
+            hints[i]=row['role']
     optical = {role for role in hints if role in OPTICS}
     extensions = mat.get('extensions', {})
     transmission = extensions.get('KHR_materials_transmission', {})
@@ -110,6 +113,8 @@ def _material_fixes(glb, images, index, parts, rows, choice, report):
 
     for p, row in zip(parts, rows):
         target = choice if choice in ROLES else None
+        if not target and row.get('paired_lens'):
+            target=row['role']
         if not target and exports_colour_image and row['role']=='paint':
             target = 'body'
         if not target and solid and row['role']=='glass':
@@ -262,7 +267,14 @@ def run_check(job, profile, web):
             row = app.model_tests.run('Blender car.glb', lambda:(prepared, 'Blender car.glb'), None)
         finally:
             app.executor.shutdown(wait=True, cancel_futures=True)
-        report['garage'] = {k:row[k] for k in ('status','stage','code','messages','wheels','parts') if k in row}
+        report['garage'] = {k:row[k] for k in ('status','stage','code','messages','wheels','parts',
+                                               'lights','lamp_mount_checks') if k in row}
+        for end, lamps in row.get('lights',{}).items():
+            findings.append(dict(level='workshop' if lamps['origin']=='review' else 'info',
+                                 message=end.capitalize()+' lights — '+lamps['message']))
+            for part in lamps['parts']:
+                findings.append(dict(level='info',material=part['material'],object=part['name'],
+                                     message=end.capitalize()+' light — '+part['reason']+'.'))
         if row['status']=='needs_attention':
             messages = row.get('messages') or ['Inspect this model in Car workshop.']
             codes = row.get('blocker_codes') or [row.get('code')] * len(messages)

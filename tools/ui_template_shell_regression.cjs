@@ -17,6 +17,16 @@ async function preview(env){await env.get('reviewTemplateShell').onclick()}
 async function approve(env){env.get('confirmShellAssembly').checked=true;env.get('confirmShellAssembly').onchange();await env.get('approveShellAssembly').onclick()}
 async function main(){
  const checks=[];
+ const mixed=await shellEnvironment();
+ for(const [mode,front,rear] of [['supplied_front',false,true],['supplied_rear',true,false]]){
+  mixed.get('shellLights').value=mode;await mixed.get('shellLights').onchange();
+  assert.equal(mixed.get('shellFrontLightHeight').disabled,front);
+  assert.equal(mixed.get('shellRearLightHeight').disabled,rear);
+  assert.equal(mixed.get('shellLightSpacing').disabled,false);
+  assert.equal(mixed.records.get('shell').template_shell_settings.lighting.mode,mode);
+ }
+ assert.deepEqual(mixed.errors,[]);
+ checks.push('Mixed light setups save the chosen end and only enable placement for the supplied lamps');
  const guides=await shellEnvironment();
  guides.run("showWheelCheck({status:'unmeasured'},false)");
  assert.match(guides.get('wheelHowTo').children[0].children[0].textContent,/four tyres/);
@@ -153,7 +163,7 @@ async function main(){
 
  const mismatchedRequest={...clone(inherited),requested:matching},wrongAssets=clone(inherited);wrongAssets.asset_sha256['hq/wheel']='9'.repeat(64);
  const forgedDigest={...clone(inherited),plan_digest:'0'.repeat(64)};
- for(const override of [{schema:1,algorithm_revision:3},{running_gear_plan:null},{running_gear_plan:mismatchedRequest},{running_gear_plan:wrongAssets},{running_gear_plan:forgedDigest,reference:shellReference(forgedDigest)}]){
+ for(const override of [{schema:1,algorithm_revision:3},{schema:2,algorithm_revision:6},{running_gear_plan:null},{running_gear_plan:mismatchedRequest},{running_gear_plan:wrongAssets},{running_gear_plan:forgedDigest,reference:shellReference(forgedDigest)}]){
   const invalid=await shellEnvironment();invalid.shellReport(override);await preview(invalid);assert.equal(invalid.run('shellReview'),null);assert.equal(invalid.get('confirmShellAssembly').disabled,true);assert.equal(invalid.get('shellStage').classList.contains('hidden'),true);assert.equal(invalid.calls.some(call=>call.url==='/api/approve-template-shell'),false);assert.ok(invalid.errors.length);
  }
  const forgedCustom=await shellEnvironment(false,changed),pretend=shellGearPlan(changed);pretend.ready=true;pretend.native_no_op=true;pretend.blockers=[];pretend.requested_corners=clone(pretend.corners);forgedCustom.shellReport({available:true,ready_for_candidate:true,preview_available:true,source:{source_sha256:'a'.repeat(64)},review_digest:'d'.repeat(64),blockers:[],running_gear_plan:pretend,reference:shellReference(pretend)});await preview(forgedCustom);assert.equal(forgedCustom.run('shellReview'),null);assert.equal(forgedCustom.calls.some(call=>call.url.startsWith('/api/template-shell-preview/')),false);assert.ok(forgedCustom.errors.length);

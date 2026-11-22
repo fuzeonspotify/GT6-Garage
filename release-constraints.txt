@@ -1,4 +1,5 @@
 numpy==2.5.5
 Pillow==13.0.0
 fast-simplification==0.2.0
+meshoptimizer==0.2.30a0
 pyinstaller==6.22.3

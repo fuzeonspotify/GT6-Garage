@@ -49,28 +49,70 @@ def _tyre_dimensions(scene,records,long):
             centers[k]=bounds.mean(0);radii[k]=float(max(bounds[1,1]-bounds[0,1],bounds[1,long]-bounds[0,long])/2)
     return centers,radii
 
-def _name_role(name):
-    s=name.lower().replace('-','_');words=set(re.findall('[a-z0-9]+',s))
-    if re.search(r'steer(?:ing)?[\s._-]*wheel|wheel[\s._-]*steering',s):
+def _words(name):
+    # Asset exporters mix HeadLampL, HEADLamp_L, head_lamp.L and numbered copies.
+    name = re.sub(r'([A-Z])([A-Z][a-z])', r'\1 \2', name)
+    name = re.sub(r'([a-z])([A-Z])', r'\1 \2', name)
+    return ' '.join(re.findall(r'[a-z]+', name.casefold()))
+
+
+_AUX_LAMP = re.compile(r'\b(?:blinkers?|indicators?|turn ?signals?|turn ?lights?|directionals?|'
+                       r'revers(?:e|ing)(?: ?(?:lights?|lamps?))?|back ?up ?(?:lights?|lamps?)|'
+                       r'fog(?:s| ?(?:lights?|lamps?))?|side ?markers?|reflectors?|'
+                       r'(?:cop|police|emergency|warning|dash|interior|roof) ?(?:lights?|lamps?)|'
+                       r'strobes?|beacons?|sirens?|light ?bars?|drls?|daytime ?running)\b')
+_LAMP_HARDWARE = re.compile(r'\b(?:housings?|buckets?|bezels?|brackets?|surrounds?|seals?|'
+                            r'frames?|mounts?|trims?|inserts?|backs?|covers?)\b')
+_WHEEL_TRIM = re.compile(r'\b(?:wheel ?(?:arches|arch|wells?|houses?|housings?|liners?|openings?)|'
+                         r'(?:arch|well) ?liners?|mud ?(?:flaps?|guards?)|fenders?|'
+                         r'(?:wind(?:screen|shield) ?)?wipers?|grill(?:e)?s?)\b')
+
+
+def stationary_part_role(part_name, material_name=''):
+    """Recognize parts that must survive wheel replacement or lamp inference."""
+    label = _words(part_name+' '+material_name)
+    if re.search(r'\b(?:steer(?:ing)? ?wheel|wheel ?steering)\b', label):
         return 'interior'
-    patterns=[('brakelight',r'brake.?light|stop.?lamp|high.?stop'),('headlight',r'head.?light|head.?lamp'),('taillight',r'tail.?light|tail.?lamp|rear.?lamp'),('tyre',r'\btyres?\b|\btires?\b|rubber'),('valve',r'valve'),('rim',r'\brims?\b|\balloys?\b|wheel(?!.*(arch|steer))'),('glass',r'glass|windscreen|windshield|window'),('interior',r'interior|dashboard|steering|seat'),('paint',r'body.?paint|paintwork|car.?paint')]
-    return next((role for role,pat in patterns if re.search(pat,s)),None)
+    if _AUX_LAMP.search(label):
+        return 'body'
+    if re.search(r'light|lamp', label) and _LAMP_HARDWARE.search(label):
+        return 'glass' if re.search(r'\bglass\b', label) and 'cover' in label else 'body'
+    part_words=_words(part_name)
+    trim=_WHEEL_TRIM.search(part_words)
+    if trim and trim[0].startswith('grill') and re.search(r'\b(?:wheel|rim|tyre|tire)s?\b',part_words):
+        trim=None
+    if trim or _WHEEL_TRIM.fullmatch(_words(material_name)):
+        return 'body'
+    return None
+
+
+def _name_role(name):
+    s = _words(name)
+    if re.search(r'\b(?:steer(?:ing)? ?wheel|wheel ?steering)\b',s):
+        return 'interior'
+    patterns = (
+        ('brakelight', r'\b(?:brake ?(?:lights?|lamps?)|stop ?(?:lights?|lamps?)|(?:light|lamp)s? (?:brake|stop)|high ?(?:mount(?:ed)? )?stop|chmsl)\b'),
+        ('headlight', r'\b(?:head ?(?:lights?|lamps?)|front ?(?:lights?|lamps?)|(?:light|lamp)s? front|(?:low|high|dipped|main) ?beams?)\b'),
+        ('taillight', r'\b(?:(?:tail|rear) ?(?:lights?|lamps?)|(?:light|lamp)s? rear|rear ?running ?lights?)\b'),
+        ('tyre', r'\b(?:tyres?|tires?|treads?|rubber)\b'),
+        ('valve', r'\b(?:valves?|valve ?stems?)\b'),
+        ('rim', r'\b(?:rims?|alloys?|wheels?|hub ?caps?)\b'),
+        ('glass', r'\b(?:glass|windscreens?|windshields?|windows?|backlight ?glass)\b'),
+        ('interior', r'\b(?:interiors?|cockpits?|dashboards?|steering|seats?|seat ?belts?)\b'),
+        ('paint', r'\b(?:body ?paint|paintwork|car ?paint)\b'))
+    return next((role for role, pattern in patterns if re.search(pattern, s)), None)
 
 
 def _mechanical_names(name):
     """Names can suggest review; they cannot prove a part is one motion group."""
-    name=name.lower()
+    name=_words(name)
     patterns=(('brake_rotor',r'(?<![a-z0-9])(?:brake[ _.-]*(?:disc|disk|rotor)s?|rotors?)(?![a-z0-9])'),
               ('brake_caliper',r'(?<![a-z0-9])(?:brake[ _.-]*)?calipers?(?![a-z0-9])'))
     return [role for role,pattern in patterns if re.search(pattern,name)]
 
 
 def component_name_role(part_name,material_name):
-    # Dirt, rubber and tyre materials are frequently shared with stationary trim.
-    if re.fullmatch(r'(?:grill(?:e)?s?|(?:windshield[ _-]*)?wipers?)(?:[ ._-]*(?:static|mesh|[0-9]+))*',part_name,flags=re.I):
-        return 'body'
-    label=part_name+' '+material_name
-    return _name_role(label) or _name_role(re.sub(r'[^a-z0-9]+',' ',label.casefold()))
+    return stationary_part_role(part_name, material_name) or _name_role(part_name+' '+material_name)
 
 
 def _mechanical_corner(part,centers,radii,long,lat):
@@ -131,6 +173,58 @@ def _named_wheel_forward(scene, extent):
     return ('+' if delta[axis]>0 else '-') + ('X' if axis==0 else 'Z')
 
 
+def _paired_lenses(scene, records, assignments, front, lat, long):
+    """Require a unique mirrored pair with matching material, dimensions and end."""
+    bounds = scene.bounds
+    middle = bounds.mean(0)
+    size = np.maximum(bounds[1]-bounds[0],1e-8)
+    groups = {}
+    for part in scene.parts:
+        row = records[part.id]
+        if part.id in assignments or row['role'] not in ('body','glass'):
+            continue
+        label = _words(part.name+' '+row['material_name'])
+        if stationary_part_role(part.name,row['material_name']) or not re.search(
+                r'\b(?:(?:light|lamp) ?(?:cluster|lens|lenses|bulbs?)|projector ?lens)\b',label):
+            continue
+        relative = (part.bounds-middle)/size
+        z = relative[:,long]*front[long]
+        if min(z)>.22:
+            role='headlight'
+        elif max(z)<-.22:
+            role='taillight'
+        else:
+            continue
+        low, high = relative[:,lat]
+        if low<=.13 and high>=-.13:
+            continue
+        material = scene.materials[part.material]
+        red,green,blue = material['emissive'] if any(material['emissive']) else material['color'][:3]
+        if role=='taillight' and not (red>.1 and red>3*max(green,blue)):
+            continue
+        if role=='headlight' and (min(red,green,blue)<.45*max(red,green,blue) or max(red,green,blue)<.1):
+            continue
+        groups.setdefault((role,part.material),[]).append(part)
+    existing={r['role'] for r in records.values()}
+    matches={}
+    for (role,_), pair in groups.items():
+        if len(pair)!=2 or role in existing:
+            continue
+        a,b=pair
+        offset=(a.center-middle)/size
+        offset[lat]*=-1
+        if (np.max(np.abs(offset-(b.center-middle)/size))>.035 or
+                np.any(np.abs(a.extent-b.extent)>.25*np.maximum(a.extent,b.extent)+size*.002)):
+            continue
+        matches.setdefault(role,[]).append(pair)
+    for role,pairs in matches.items():
+        if len(pairs)!=1:
+            continue
+        for part in pairs[0]:
+            records[part.id].update(role=role,confidence=.86,paired_lens=True,
+                reason='Matching left and right lamp lenses at the same end, with compatible colour')
+
+
 def infer(scene:Scene,forward=None,overrides=None):
     b=scene.bounds;extent=b[1]-b[0];origin=b.mean(0)
     if forward is None:
@@ -154,6 +248,8 @@ def infer(scene:Scene,forward=None,overrides=None):
         if role is None:
             if m['alpha_mode']=='BLEND' or m['transmission']>.05:role='glass';confidence=.84;why='Transparent/transmissive source material'
             else:role='body'
+        elif not assigned and role=='body' and m['alpha_mode']=='BLEND' and stationary_part_role(p.name,m['name']):
+            role='glass';why='Stationary transparent detail; preserve its optical surface'
         radial=max(float(e[1]),float(e[long]),1e-8);roundness=min(float(e[1]),float(e[long]))/radial
         low=c[1]<b[0,1]+.53*car_height
         outer=abs(c[lat]-origin[lat])>.20*car_width
@@ -165,10 +261,11 @@ def infer(scene:Scene,forward=None,overrides=None):
             # to pass the heuristic mesh-density/name/colour thresholds.
             if role=='tyre' and not (assigned['corner_fixed'] and assigned['corner'] is None):
                 candidates.append((10.*assigned['priority'],p))
-        elif not mechanical and roundness>.80 and low and outer and thin and radius_ok and len(p.indices)>80:
+        elif not mechanical and named in (None,'tyre','rim') and roundness>.80 and low and outer and thin and radius_ok and len(p.indices)>80:
             score=2*roundness+(1-lum)+(.4 if role=='tyre' else 0)+(.2 if metal<.2 else 0)
             if role=='tyre' or (lum<.16 and metal<.35):candidates.append((score,p))
         records[p.id]=dict(id=p.id,name=p.name,node=p.node,primitive=p.primitive,material=p.material,material_name=m['name'],role=role,corner=assigned['corner'] if assigned else None,confidence=round(confidence,2),reason=why,triangles=len(p.indices),vertices=len(p.positions),bounds=p.bounds.tolist(),center=p.center.tolist(),warnings=p.warnings.copy(),source_color=m['color'],mechanical_role_proposals=mechanical,role_review_required=bool(mechanical))
+    _paired_lenses(scene, records, assignments, front, lat, long)
     best={}
     for score,p in candidates:
         c=p.center;f='F' if float((c-origin)@front)>0 else 'R';s='L' if float((c-origin)@left)>0 else 'R';corner=f+s
@@ -201,6 +298,7 @@ def infer(scene:Scene,forward=None,overrides=None):
     for p in scene.parts:
         row=records[p.id];assigned=assignments.get(p.id)
         if row['corner'] or row['role'] in ('ignore','glass','headlight','taillight','brakelight'):continue
+        if not assigned and stationary_part_role(p.name,row['material_name']):continue
         if assigned and (assigned['role'] not in CORNER_ROLES or assigned['corner_fixed']):continue
         if row['role'] in MECHANICAL_ROLES or row['mechanical_role_proposals']:
             if row['role'] in MECHANICAL_ROLES and mechanical_centres_valid:

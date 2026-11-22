@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 
 from .errors import GarageError
-from .recognition import CORNERS, axes
+from .recognition import CORNERS, axes, stationary_part_role
 from .running_gear import resolve_running_gear
 from .surface_realization import native_finish_substitutions
 from .template_lights import find_lamp_settings
@@ -74,6 +74,8 @@ def _wheel_groups(scene, project, orientation):
                 or tag not in (None, 'rim', 'tyre')):
             continue
         label = (part.name+' '+scene.materials[part.material]['name']).casefold().replace('_', ' ')
+        if not picked and stationary_part_role(part.name,scene.materials[part.material]['name']):
+            continue
         if re.search(r'steer|arch|fender|liner|wheel.?well|caliper|brake|rotor|spare|hubcap', label):
             continue
         x, _, z = part.center @ orientation.T
@@ -259,17 +261,20 @@ def _exterior_optic(scene, row, project, rotation, longitudinal_bounds):
     if role in ('glass', 'headlight', 'taillight', 'brakelight'):
         return role if material['double_sided'] or any(material['emissive']) else None
     if (role not in ('body','paint') or row['id'] in project.get('overrides', {})
+            or row['reason'] == 'Blender/GLB role tag'
+            or stationary_part_role(row['name'],row['material_name'])
             or not any(material['emissive']) or material['alpha_mode'] != 'OPAQUE'):
         return None
     # Only classify a complete, localized emissive group. The preview lets the
     # player inspect signals, marker lights and lenses before accepting roles.
-    if re.search(r'chrome|exhaust|mirror|door.?lock|badge|emblem|interior|trim', row['material_name'], re.I):
+    if re.search(r'chrome|exhaust|mirror|door.?lock|badge|emblem|interior|trim', row['name']+' '+row['material_name'], re.I):
         return None
     low, high = longitudinal_bounds
     z = np.asarray(row['bounds']) @ rotation[2]
-    if max(z) <= low+.28*(high-low):
+    red,green,blue=material['emissive']
+    if max(z) <= low+.28*(high-low) and min(red,green,blue)>=.45*max(red,green,blue):
         return 'headlight'
-    if min(z) >= high-.28*(high-low):
+    if min(z) >= high-.28*(high-low) and red>3*max(green,blue):
         return 'taillight'
     return None
 
@@ -338,7 +343,7 @@ def suggest_setup(scene, project, sizing, *, template_root=None):
     finishes = []
     materials = scene.document.get('materials', [])
     coverage = []
-    has_lamps = False
+    lamp_parts = {'front':[], 'rear':[]}
     longitudinal_bounds = sorted(scene.bounds @ rotation[2])
     for part in project['inspection']['parts']:
         pid, role = part['id'], part['role']
@@ -360,7 +365,11 @@ def suggest_setup(scene, project, sizing, *, template_root=None):
                 if effects:
                     overrides.setdefault(pid, {'role':role, 'corner':None})['use_native_finish'] = True
                     finishes.append({'id':pid, 'material':part['material_name'], 'role':role, 'effects':effects})
-        has_lamps |= role in ('headlight', 'taillight', 'brakelight')
+        if role in ('headlight','taillight','brakelight'):
+            end='front' if role=='headlight' else 'rear'
+            lamp_parts[end].append({'id':pid,'name':part['name'],'material':part['material_name'],
+                                    'role':role,'reason':part['reason'] if role==part['role']
+                                    else 'Localized exterior emission at this end of the car'})
         coverage.append({'id': pid, 'role': role, 'disposition': 'excluded' if role=='ignore' else 'emit'})
     notes = []
     wheel_files, file_error, search = None, None, None
@@ -379,10 +388,31 @@ def suggest_setup(scene, project, sizing, *, template_root=None):
             file_error = 'Choose the compatible starting package in Setup to check both GT6 wheel files.'
     if not wheels:
         notes.append('Four separate wheel envelopes could not be measured. Set body placement in the assembled preview.')
-    # Use authored lenses when present. An incomplete set stays visible for
-    # review. Never silently remove authored lenses to make a kit succeed.
-    if not has_lamps:
-        lights = settings['lighting'] if settings['lighting']['mode']=='supplied' else {'mode':'supplied'}
+    missing=[end for end,parts in lamp_parts.items() if not parts]
+    mode={(): 'source', ('front',): 'supplied_front', ('rear',): 'supplied_rear',
+          ('front','rear'): 'supplied'}[tuple(missing)]
+    lighting_report={end:{'origin':'supplied' if end in missing else 'model','parts':parts}
+                     for end,parts in lamp_parts.items()}
+    by_id={part.id:part for part in scene.parts}
+    for end, entry in lighting_report.items():
+        lamps=entry['parts']
+        if not lamps:
+            entry['message']='Garage supplies a pair of '+('headlights.' if end=='front' else 'running and brake lights.')
+            continue
+        entry['message']='Using '+str(len(lamps))+' model lamp '+('surface.' if len(lamps)==1 else 'surfaces.')
+        if end=='front':
+            xs=np.concatenate([(by_id[p['id']].positions @ rotation[0])*placement['scale']+
+                               placement['translation_metres'][0] for p in lamps])
+            incomplete=not (np.any(xs<0) and np.any(xs>0))
+            help_text='Only one side has a headlight. Assign the other lens in Parts, then check again.'
+        else:
+            incomplete=all(p['role']=='brakelight' for p in lamps)
+            help_text='Only a brake light was identified. Assign a rear running-light surface in Parts.'
+        if incomplete:
+            entry.update(origin='review',message=help_text)
+            notes.append(help_text)
+    if missing:
+        lights = normalize_shell_settings({'lighting':{**settings['lighting'],'mode':mode}})['lighting']
         try:
             settings['lighting'] = find_lamp_settings(scene, coverage, rotation*placement['scale'],
                 np.asarray(placement['translation_metres']), lights)
@@ -391,14 +421,13 @@ def suggest_setup(scene, project, sizing, *, template_root=None):
                 raise
             notes.append(str(exc))
             settings['lighting'] = lights
+            for end in missing:
+                lighting_report[end].update(origin='review',message=str(exc))
     else:
         settings['lighting'] = {'mode':'source'}
-        roles = {row['role'] for row in coverage if row['disposition']=='emit'}
-        if not {'headlight','taillight'} <= roles:
-            notes.append('Only part of the source lamp set was recognized. Assign the missing lamp surfaces or review exclusions for supplied lights.')
     changes = {'template_shell_settings': normalize_shell_settings(settings), 'overrides': overrides}
     setup = {'id': project['id'], 'sizing': sizing, 'changes': changes, 'exclusions': exclusions, 'optics':optics,
-             'finishes': finishes, 'fit': fit, 'notes': notes}
+             'finishes': finishes, 'fit': fit, 'notes': notes,'lights':lighting_report}
     setup['wheel_check'] = dimensional_check(fit, gear)
     setup['wheel_check'].update(wheel_files=wheel_files, search=search, wheel_file_error=file_error)
     # Includes untouched source assignments, coordinate choices, approval and

@@ -14,6 +14,7 @@ if player:
 datas += [('resources/template-credits.txt','resources'),('resources/donor_ranges.json','resources'),
           ('tools/template_recipe','tools/template_recipe'), ('LICENSE','licenses/garage')]
 datas += [('resources/convert_static.py','resources')]
+datas += [('third_party/meshoptimizer/LICENSE.md','licenses/meshoptimizer')]
 for package in ('numpy','pillow','fast-simplification','pyinstaller'):
     dist = distribution(package)
     for item in dist.files or ():
@@ -26,6 +27,8 @@ if python_license.is_file():
 binaries = []
 hiddenimports = ['tkinter','tkinter.filedialog','tkinter.messagebox']
 tmp_ret = collect_all('fast_simplification')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+tmp_ret = collect_all('meshoptimizer')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 
