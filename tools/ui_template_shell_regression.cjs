@@ -38,6 +38,16 @@ async function main(){
  assert.match(links[2].children[0].textContent,/second car/);
  assert.ok(links.every(link=>!link.open));
  checks.push('Import warnings show specific repair steps and completed builds offer both install guides and the next-car guide');
+ const restoring=await shellEnvironment();
+ const restoreGate=restoring.gateProject('a'),initialOpen=restoring.run("openProject('a',false)");
+ await until(()=>restoring.calls.some(call=>call.url==='/api/project/a'),'restoring saved car');
+ restoring.run("page('help')");
+ restoreGate.resolve();await initialOpen;
+ assert.equal(restoring.run('project.id'),'a');
+ assert.equal(restoring.run('activePage'),'help');
+ await restoring.run("openProject('shell')");
+ assert.equal(restoring.run('activePage'),'workshop');
+ checks.push('Reading help during startup keeps the guide open while the previous car finishes loading');
  const materialEnv=await shellEnvironment();
  const materialHelp={material:'Paint',part_id:'n0p0',part_name:'body',part_count:1,steps:['Keep the texture on Base Color.']};
  materialEnv.shellReport({available:false,ready_for_candidate:false,preview_available:false,review_digest:null,
