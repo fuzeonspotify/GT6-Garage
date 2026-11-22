@@ -1,0 +1,14 @@
+schema_version = "1.0.0"
+id = "gt6_garage"
+version = "1.0.0"
+name = "GT6 Garage"
+tagline = "Check and prepare a car model for Gran Turismo 6"
+maintainer = "FuzeXO"
+type = "add-on"
+tags = ["Import-Export", "Material"]
+blender_version_min = "4.2.0"
+license = ["SPDX:GPL-3.0-or-later"]
+website = "https://github.com/fuzeonspotify/GT6-Garage"
+
+[permissions]
+files = "Read local textures and save the checked car export"

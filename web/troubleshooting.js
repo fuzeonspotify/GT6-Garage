@@ -39,6 +39,7 @@ const guides = {
     title: 'A warning says a material needs a separate native recipe',
     steps: [
       'Look below the warning for **How to fix** and the material name. Click **Show in Parts** to find the panels that use it.',
+      'In Blender, press **N → GT6 Garage → Check & prepare car** to bake normal-map detail, resize textures and review transparent surfaces. Install the Blender add-on ZIP from the Garage download using **Edit → Preferences → Add-ons → Install from Disk**.',
       'Check what those parts should look like. Solid painted markings, see-through windows and a grille with holes each need a different repair. Follow the steps for the named material, export a copy from your editor and test it again.',
       'If an older result only shows the warning, click **Open in workshop → Build & export → Check assembled car** to get the current repair instructions.'
     ]

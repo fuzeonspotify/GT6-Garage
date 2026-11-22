@@ -6,6 +6,8 @@ from PIL import Image,ImageOps
 from .glb import GLB
 from .errors import GarageError
 
+MAX_SOURCE_PIXELS = 16_777_216
+
 
 def srgb(v):
     a=np.clip(np.asarray(v,dtype=float),0,1)
@@ -46,7 +48,7 @@ class Materials:
         if 'bufferView' not in imdef:raise GarageError('Embed PNG/JPEG image data in the GLB before native conversion.')
         data,_=self.gltf.view(imdef['bufferView'])
         with Image.open(io.BytesIO(data)) as im:
-            if im.width*im.height>16_777_216:raise GarageError('Source texture exceeds the 16 MP decode budget.')
+            if im.width*im.height>MAX_SOURCE_PIXELS:raise GarageError('Source texture exceeds the 16 MP decode budget.')
             return im.convert('RGBA')
 
     def source_image(self,mat):

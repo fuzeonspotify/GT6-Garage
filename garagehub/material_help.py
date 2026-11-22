@@ -58,13 +58,18 @@ def alpha_steps(material, role):
 
 def finish_steps(features):
     steps = []
+    maps = {'normalTexture', 'occlusionTexture'} & set(features)
+    if maps:
+        steps.append('In Blender, press N in the 3D Viewport and open GT6 Garage → Check & prepare car. '
+                     'The Garage add-on bakes normal-map and occlusion detail into the colour texture on an export copy. '
+                     'Review any surface choices, run the check again and click Save checked GLB.')
     if 'KHR_materials_specular' in features:
         steps.append('In Blender’s Shading workspace, select this material. On Principled BSDF → Specular, '
                      'disconnect inputs to IOR Level and Tint. Set IOR Level to 0.5 and Tint to white '
                      'to use the default reflection settings on the export copy.')
-    other = sorted(set(features) - {'KHR_materials_specular'})
+    other = sorted(set(features) - {'KHR_materials_specular'} - maps)
     if other:
         steps.append('Make a copy of this material for export. On that copy, remove or bake the effects '
                      'listed in the warning that you can replace with the GT6 finish. Keep the Base Color '
                      'texture if it carries markings.')
-    return [*steps, REIMPORT]
+    return [*steps, 'Choose the saved GLB in Garage’s Model tester.' if maps else REIMPORT]

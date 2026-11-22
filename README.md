@@ -8,6 +8,10 @@ Extract the whole Windows x64 ZIP and open **GT6Garage.exe**. The workshop opens
 
 **We recommend backing up your GT6 game save before installing a custom car.** Keep a copy on a separate drive so you can restore your garage and career progress if your save is lost or corrupted. [How to back up your save on RPCS3 or PS3](docs/player-guide.md#back-up-your-gt6-save)
 
+## Check your car in Blender
+
+The Windows download includes an optional Blender add-on. Open Garage once, then in Blender use **Edit → Preferences → Add-ons → Install from Disk** and select **GT6-Garage-Blender-1.0.0.zip**. Press **N** in the 3D Viewport, open **GT6 Garage**, and click **Check & prepare car**. It bakes supported texture effects, checks every exported material, and shows any choices before saving your GLB. [Blender add-on guide](docs/blender-addon.md)
+
 ## RPCS3 on PC
 
 1. **Find your update folder.** In RPCS3, right-click **Gran Turismo 6** and choose **Open Folder → Open Game Data Folder**. Open `USRDIR/PDIPFS`. This is the local folder you’ll use for setup and installation.
@@ -63,4 +67,4 @@ Thank you to **Willyham**, **Diego**, and **Glitcher101GamingYT** for helping ve
 - The manual describes a complete worked body replacement, an optional separate dealership entry, and independent file checks. [Read the manual import guide](docs/manual-import.md)
 - The build guide covers running from source, compiling the pinned packer, tests and the Windows release. [Build or contribute](docs/build.md)
 
-GT6 Garage code and documentation are **MIT licensed**. The sample sedan is Kenney’s CC0 work. A player supplies their game files and, when rebuilding the historical template, the separately licensed Supra model. Project and third-party license texts travel with the release. Unofficial community project. [License](LICENSE) · [Third-party credits](THIRD_PARTY.md)
+The Garage application and documentation are **MIT licensed**. The Blender extension is **GPL-3.0-or-later**. [Blender extension license](blender_addon/LICENSE) The sample sedan is Kenney’s CC0 work. A player supplies their game files and, when rebuilding the historical template, the separately licensed Supra model. Project and third-party license texts travel with the release. Unofficial community project. [License](LICENSE) · [Third-party credits](THIRD_PARTY.md)

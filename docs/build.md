@@ -52,6 +52,16 @@ For a game-data integration test, start with a new workspace, build the template
 
 ## Make a Windows release
 
+The Blender extension lives in **blender_addon/** and ships inside the Windows download. The following command also builds the extension ZIP on its own. Install that ZIP through Blender Preferences. The add-on uses the built-in glTF exporter and has no third-party Python dependencies inside Blender.
+
+```powershell
+.\.venv\Scripts\python tools/build_blender_addon.py
+```
+
+On **Check & prepare car**, Blender writes a temporary **source.glb** and a **request.json** with schema 1 and any per-material choices. It starts **GT6Garage.exe --blender-check <folder>**. The worker prepares textures, checks materials, and runs the same Model tester as the desktop app in a separate workspace. It reads the player's existing template and wheel settings when available. **report.json** records the fixes, remaining choices and assembly result. A **prepared.glb** appears only when the source has cleared the blocking checks. Blender verifies its SHA-256 before saving it. Assembly warnings still require fitting in Garage and the final driving check takes place in game. [Blender extension](../blender_addon) · [Preparation worker](../garagehub/blender_preflight.py) · [Image preparation](../garagehub/blender_textures.py)
+
+To package the desktop application and extension together, run the Windows builder.
+
 ```powershell
 .\.venv\Scripts\python tools/build_windows.py
 ```

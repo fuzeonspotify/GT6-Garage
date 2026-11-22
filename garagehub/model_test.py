@@ -93,6 +93,7 @@ class ModelTests:
             review=review_shell(scene,draft,settings['placement'],settings['dispositions'],settings['lighting'],settings['running_gear'])
             if not review['available']:
                 row['messages']=component_messages(review,project)
+                row['blocker_codes']=[b.get('code') for b in review['blockers']]
                 for blocker in review['blockers']:
                     if 'material_help' in blocker:
                         row['material_help'] = blocker['material_help']
@@ -120,6 +121,7 @@ class ModelTests:
                 row['status']='ready_to_build'
             elif not row['messages']:
                 row['messages']=component_messages(review,project)
+                row['blocker_codes']=[b.get('code') for b in review['blockers']]
         except Cancelled:
             raise
         except GarageError as exc:

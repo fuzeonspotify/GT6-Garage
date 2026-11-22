@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from garagehub import __version__
 from garagehub.car_pack import trusted_packer
+from tools.build_blender_addon import FILENAME as ADDON_FILENAME, package_addon
 
 
 def package(frozen, packer, output):
@@ -23,6 +24,7 @@ def package(frozen, packer, output):
         folder = Path(tmp)
         app = folder / 'GT6 Garage'
         shutil.copytree(frozen, app)
+        package_addon(app/ADDON_FILENAME)
         shutil.copytree(ROOT / 'third_party/GTToolsSharp', app / 'Support/GTToolsSharp')
         shutil.copyfile(packer, app / 'Support/GTToolsSharp/GTToolsSharp.exe')
         for name in ('LICENSE', 'README.md', 'THIRD_PARTY.md'):
@@ -33,6 +35,7 @@ def package(frozen, packer, output):
             'GT6 Garage ' + __version__ + '\n\nExtract the entire ZIP. Double-click GT6Garage.exe.\n'
             'First time? Choose Prepare car template. Have an older kit? Choose Find car template.\n'
             'Next choose Use my stock PDIPFS and select your five-file update folder.\n'
+            'Blender users can install the included GT6-Garage-Blender ZIP from Blender Preferences. See docs/blender-addon.md.\n'
             'For PS3 FTP installation, see docs/player-guide.md or open:\n'
             'https://github.com/fuzeonspotify/GT6-Garage/blob/main/docs/player-guide.md\n', encoding='utf-8')
         # Offline guide links stay local. Implementation links open the tagged source.
