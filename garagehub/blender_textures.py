@@ -1,14 +1,13 @@
 """Prepare embedded colour images on the Blender export copy."""
 import copy
 import io
-import math
 
 import numpy as np
 from PIL import Image
 
 from .errors import GarageError
 from .model_inputs import _pack_glb
-from .car_materials import MAX_SOURCE_PIXELS
+from .texture_images import MAX_SOURCE_PIXELS, open_texture
 
 # These use ordinary glTF texture slots and buffer views. Preserve all original
 # indices when another extension may define references we do not know about.
@@ -30,12 +29,19 @@ def _uv(info):
             tuple(transform.get('offset', [0, 0])), tuple(transform.get('scale', [1, 1])))
 
 
+def _resized_colour(image, size):
+    # Keep the artist's RGB under transparent pixels on the export copy.
+    channels = [c.resize(size, Image.Resampling.LANCZOS) for c in image.convert('RGBA').split()]
+    return Image.merge('RGBA', channels)
+
+
 class ExportImages:
     def __init__(self, glb):
         self.glb = glb
         self.doc = glb.doc
         self.added = bytearray()
         self.alpha = {}
+        self.resized_colours = {}
 
     def image(self, info):
         textures = self.doc.get('textures', [])
@@ -47,11 +53,7 @@ class ExportImages:
         if type(source) is not int or not 0 <= source < len(images):
             raise GarageError('Pack a PNG or JPEG for this texture in Blender.')
         data, _ = self.glb.view(images[source]['bufferView'])
-        im = Image.open(io.BytesIO(data))
-        if im.width * im.height > 64 * 1024**2:
-            im.close()
-            raise GarageError('Scale this image to 8192 pixels per side or smaller in a copy before preparing it.')
-        return im
+        return open_texture(data, images[source].get('name') or f'Image {source + 1}')
 
     def opaque(self, info):
         if not info:
@@ -87,6 +89,26 @@ class ExportImages:
         textures.append(texture)
         return {'index': len(textures)-1, **{k: copy.deepcopy(reference[k]) for k in ('texCoord', 'extensions') if k in reference}}
 
+    def fit_base_colour(self, mat):
+        pbr = mat.get('pbrMetallicRoughness', {})
+        base = pbr.get('baseColorTexture')
+        if not base:
+            return []
+        index = base['index']
+        if index not in self.resized_colours:
+            with self.image(base) as image:
+                width, height = image.size
+                if width * height <= MAX_SOURCE_PIXELS:
+                    return []
+                size = _fit(image.size, 4096)
+                with _resized_colour(image, size) as resized:
+                    output = self.store(resized, base, mat.get('name', 'Surface'))
+            message = f'Resized the colour image from {width} × {height} to {size[0]} × {size[1]}.'
+            self.resized_colours[index] = (output['index'], message)
+        new_index, message = self.resized_colours[index]
+        pbr['baseColorTexture'] = {**base, 'index':new_index}
+        return [message]
+
     def prepare(self, mat, uses):
         pbr = mat.get('pbrMetallicRoughness', {})
         base = pbr.get('baseColorTexture')
@@ -103,17 +125,14 @@ class ExportImages:
             raise GarageError(f'This image needs UV map {uv}. UV unwrap the affected mesh in Blender.')
         if self.wrap(reference) != (10497, 10497):
             raise GarageError('This texture uses clamp or mirror wrapping. Bake its edges into a repeatable texture in Blender.')
+        if not normal and not occlusion:
+            return self.fit_base_colour(mat)
         with self.image(reference) as im:
             old_size = im.size
-        oversized = math.prod(old_size) > MAX_SOURCE_PIXELS
-        if not normal and not occlusion and not oversized:
-            return []
-        size = _fit(old_size, 2048 if normal or occlusion else 4096)
+        size = _fit(old_size, 2048)
         if base:
             with self.image(base) as im:
-                # Straight channels retain the original colour under transparent pixels.
-                channels = [c.resize(size, Image.Resampling.LANCZOS) for c in im.convert('RGBA').split()]
-                colour = Image.merge('RGBA', channels)
+                colour = _resized_colour(im, size)
         else:
             colour = Image.new('RGBA', size, 'white')
         shade = np.ones((size[1], size[0]), dtype=np.float32)

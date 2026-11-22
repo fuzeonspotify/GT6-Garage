@@ -10,7 +10,7 @@ Extract the whole Windows x64 ZIP and open **GT6Garage.exe**. The workshop opens
 
 ## Check your car in Blender
 
-The Windows download includes an optional Blender add-on. Open Garage once, then in Blender use **Edit → Preferences → Add-ons → Install from Disk** and select **GT6-Garage-Blender-1.0.0.zip**. Press **N** in the 3D Viewport, open **GT6 Garage**, and click **Check & prepare car**. It bakes supported texture effects, checks every exported material, and shows any choices before saving your GLB. [Blender add-on guide](docs/blender-addon.md)
+The Windows download includes an optional Blender add-on. Open Garage once, then in Blender use **Edit → Preferences → Add-ons → Install from Disk** and select **GT6-Garage-Blender-1.0.1.zip**. Press **N** in the 3D Viewport, open **GT6 Garage**, and click **Check & prepare car**. Review the findings and click **Save checked GLB**. Use **Copy checked file path** to paste the exact export into Garage’s **Choose models** dialog. [Blender add-on guide](docs/blender-addon.md)
 
 ## RPCS3 on PC
 

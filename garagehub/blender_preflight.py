@@ -158,6 +158,14 @@ def _audit_materials(raw, choices):
             continue  # The GLB reader supplies a flat default material.
         parts = [p for p in uses if inferred[p.id]['role'] not in excluded]
         if not parts:
+            # A later role or wheel selection in Garage can use these images.
+            material = glb.doc['materials'][index]
+            context = dict(material=material.get('name', f'Material {index+1}'), object=uses[0].name)
+            try:
+                for message in images.fit_base_colour(material):
+                    items.append(dict(level='fixed', message=message, **context))
+            except (GarageError, OSError, Image.DecompressionBombError) as exc:
+                items.append(dict(level='block', message=str(exc), **context))
             continue
         name = glb.doc['materials'][index].get('name', f'Material {index+1}')
         key = _material_key(glb, index, parts, hashes)

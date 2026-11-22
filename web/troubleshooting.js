@@ -39,6 +39,7 @@ const guides = {
     title: 'A warning says a material needs a separate native recipe',
     steps: [
       'Look below the warning for **How to fix** and the material name. Click **Show in Parts** to find the panels that use it.',
+      'If an old result says **Source texture exceeds the 16 MP decode budget**, run a fresh test in Garage 0.4.20 or newer. After saving from the Blender panel, use **Copy checked file path** and paste it into **Choose models → File name**. If the current result names an image over the source limit, resize that image to 8192 × 8192 or smaller in a copy.',
       'In Blender, press **N → GT6 Garage → Check & prepare car** to bake normal-map detail, resize textures and review transparent surfaces. Install the Blender add-on ZIP from the Garage download using **Edit → Preferences → Add-ons → Install from Disk**.',
       'Check what those parts should look like. Solid painted markings, see-through windows and a grille with holes each need a different repair. Follow the steps for the named material, export a copy from your editor and test it again.',
       'If an older result only shows the warning, click **Open in workshop → Build & export → Check assembled car** to get the current repair instructions.'
@@ -120,7 +121,7 @@ const errorTopics = new Map([
   ['missing_resource','modelFiles'], ['external_resource','modelFiles'], ['unsupported_texture','modelFiles'],
   ['ambiguous_model','exportModel'], ['missing_model','exportModel'], ['blender_needed','exportModel'], ['blender_conversion','exportModel'],
   ['baseline_identity','startingBuild'], ['car_template','startingBuild'], ['template_identity','startingBuild'], ['stock_setup','stockFiles'],
-  ['shell_mechanical','sourceTyres'], ['wheel_fit','wheelFit'], ['shell_surface_realization','materials']
+  ['shell_mechanical','sourceTyres'], ['wheel_fit','wheelFit'], ['shell_surface_realization','materials'], ['texture_size','materials']
 ]);
 
 export function forError(code) {
@@ -142,6 +143,7 @@ export function forTestResult(row) {
   if (row.build || row.material_help) return null;
   if (row.status === 'needs_game_files') return 'startingBuild';
   if (row.status !== 'needs_attention') return null;
+  if (row.messages?.includes('Source texture exceeds the 16 MP decode budget.')) return 'materials';
   if (row.code) return forError(row.code);
   if (row.stage === 'wheel placement' && row.wheels) {
     if (row.wheels.status) return forWheelCheck({status: row.wheels.status});

@@ -106,9 +106,10 @@ def _image_bytes(raw, filename, warnings, allow_conversion=False):
         mime = 'image/webp'
     if mime or allow_conversion:
         from PIL import Image, UnidentifiedImageError
+        from .texture_images import open_texture
         try:
-            with Image.open(io.BytesIO(raw)) as im:
-                if im.width * im.height > 32_000_000 or im.width > 16384 or im.height > 16384:
+            with (open_texture(raw, filename) if mime else Image.open(io.BytesIO(raw))) as im:
+                if (not mime and im.width * im.height > 32_000_000) or im.width > 16384 or im.height > 16384:
                     _fail(f'Texture {filename} exceeds the import image limit.', 'model_limit')
                 if getattr(im, 'n_frames', 1) != 1:
                     _fail(f'Texture {filename} is animated; export a single PNG image.', 'unsupported_texture')

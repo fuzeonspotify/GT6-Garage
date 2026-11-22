@@ -28,6 +28,8 @@ async function main(){
  assert.equal(guides.run("Help.forTestResult({stage:'wheel placement',status:'needs_attention',wheels:{corners:2}})"),'sourceTyres');
  assert.equal(guides.run("Help.forTestResult({status:'needs_attention',code:'missing_resource'})"),'modelFiles');
  assert.equal(guides.run("Help.forTestResult({status:'needs_attention',code:'unexpected'})"),null);
+ assert.equal(guides.run("Help.forTestResult({status:'needs_attention',code:'validation',messages:['Source texture exceeds the 16 MP decode budget.']})"),'materials');
+ assert.equal(guides.run("Help.forTestResult({status:'needs_attention',code:'texture_size'})"),'materials');
  checks.push('Wheel instructions follow the failing check and clear on success, including saved model tests from older versions');
  guides.run("notice('A file is missing',false,'missing_resource')");
  assert.match(guides.get('notice').children[0].children[0].textContent,/missing textures/);

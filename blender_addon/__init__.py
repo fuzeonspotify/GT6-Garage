@@ -72,6 +72,7 @@ def invalidate(self, context):
     # A changed surface decision or export scope needs a freshly checked copy.
     if context:
         context.window_manager.gt6_prep.ready = False
+        context.window_manager.gt6_prep.saved_path = ''
 
 
 def surface_changed(self, context):
@@ -103,6 +104,7 @@ class GT6State(bpy.types.PropertyGroup):
     selected: BoolProperty(name='Selected meshes only', default=False, update=invalidate)
     status: StringProperty(default='Open a car, then check its visible meshes.')
     ready: BoolProperty(default=False)
+    saved_path: StringProperty(options={'SKIP_SAVE'})
     rows: CollectionProperty(type=GT6Finding)
     active: IntProperty(default=0)
     part_type: EnumProperty(name='Part type',items=[('tyre','Tyre','Separate outer rubber tyre'),
@@ -134,7 +136,7 @@ def poll_worker():
     folder = Path(_folder.name)
     try:
         if code or not (folder/'report.json').is_file():
-            raise ValueError('Select GT6Garage.exe from the complete 0.4.19 or newer Windows download, then check again.')
+            raise ValueError('Select GT6Garage.exe from the complete 0.4.20 or newer Windows download, then check again.')
         result = json.loads((folder/'report.json').read_bytes())
         if result.get('schema')!=1:
             raise ValueError('Update the Blender add-on and GT6 Garage together.')
@@ -168,11 +170,12 @@ class GT6_OT_check(bpy.types.Operator):
         state = context.window_manager.gt6_prep
         exe = application(context)
         if not exe or not exe.is_file() or exe.name.lower()!='gt6garage.exe':
-            self.report({'ERROR'}, 'Open GT6 Garage 0.4.19 once, or choose its GT6Garage.exe in this panel.')
+            self.report({'ERROR'}, 'Open GT6 Garage 0.4.20 once, or choose its GT6Garage.exe in this panel.')
             return {'CANCELLED'}
         choices = _choices.copy()
         clear_cache()
         state.ready = False
+        state.saved_path = ''
         try:
             problems = issues(context, state.selected)
             if problems:
@@ -284,7 +287,21 @@ class GT6_OT_save(bpy.types.Operator, ExportHelper):
         finally:
             if tmp:
                 tmp.unlink(missing_ok=True)
-        self.report({'INFO'},'Saved the checked GLB. Choose it in GT6 Garage.')
+        context.window_manager.gt6_prep.saved_path = str(target)
+        self.report({'INFO'},'Saved '+target.name+'. Choose this file in GT6 Garage.')
+        return {'FINISHED'}
+
+
+class GT6_OT_copy_path(bpy.types.Operator):
+    bl_idname = 'gt6garage.copy_checked_path'
+    bl_label = 'Copy checked file path'
+    bl_description = 'Paste this path into the Garage Choose models file picker'
+    @classmethod
+    def poll(cls, context):
+        return GT6_OT_save.poll(context) and bool(context.window_manager.gt6_prep.saved_path)
+    def execute(self, context):
+        context.window_manager.clipboard = context.window_manager.gt6_prep.saved_path
+        self.report({'INFO'}, 'Paste the path in the File name box under Choose models.')
         return {'FINISHED'}
 
 
@@ -336,7 +353,11 @@ class GT6_PT_preflight(bpy.types.Panel):
                 first = next(item for item in state.rows if item.key==row.key)
                 control.prop(first,'surface')
         layout.operator(GT6_OT_save.bl_idname,icon='EXPORT')
-        if state.ready:
+        if state.ready and state.saved_path and _owner == context.scene.as_pointer():
+            paragraph(layout, 'In Garage, choose this saved file.')
+            paragraph(layout, state.saved_path)
+            layout.operator(GT6_OT_copy_path.bl_idname,icon='COPYDOWN')
+        elif state.ready:
             paragraph(layout,'This saves the last checked copy. Check again after editing your car.')
         layout.separator()
         layout.label(text='Tag a whole mesh')
@@ -349,7 +370,7 @@ class GT6_PT_preflight(bpy.types.Panel):
 
 
 classes = (GT6Preferences,GT6Finding,GT6State,GT6_OT_check,GT6_OT_cancel,GT6_OT_find,GT6_OT_tag,
-           GT6_OT_save,GT6_UL_findings,GT6_PT_preflight)
+           GT6_OT_save,GT6_OT_copy_path,GT6_UL_findings,GT6_PT_preflight)
 
 
 @persistent
@@ -364,6 +385,7 @@ def on_load(_):
 def new_scene(_):
     state = bpy.context.window_manager.gt6_prep
     state.ready = False
+    state.saved_path = ''
     state.rows.clear()
     state.status = 'Open a car, then check its visible meshes.'
 

@@ -1,12 +1,11 @@
 """Source-material recipes for the hash-pinned Supra-derived native shader set."""
 from __future__ import annotations
-import io,math
+import math
 import numpy as np
 from PIL import Image,ImageOps
 from .glb import GLB
 from .errors import GarageError
-
-MAX_SOURCE_PIXELS = 16_777_216
+from .texture_images import MAX_SOURCE_PIXELS, native_thumbnail, open_texture
 
 
 def srgb(v):
@@ -40,22 +39,25 @@ class Materials:
         mid,uv=self.flat_palette
         return {'material':mid,'fvf':self.editor.fvf(1),'transparent':False,'variation':False,'constant_uv':uv[source_id]}
 
-    def embedded_image(self, texture):
+    def embedded_image(self, texture, *, for_native=False):
         if self.gltf is None:self.gltf=GLB(self.scene.raw)
         doc=self.scene.document; tex=doc['textures'][texture]
         if 'source' not in tex:raise GarageError('Compressed texture-only sources are unsupported by this profile.')
         imdef=doc['images'][tex['source']]
         if 'bufferView' not in imdef:raise GarageError('Embed PNG/JPEG image data in the GLB before native conversion.')
         data,_=self.gltf.view(imdef['bufferView'])
-        with Image.open(io.BytesIO(data)) as im:
-            if im.width*im.height>MAX_SOURCE_PIXELS:raise GarageError('Source texture exceeds the 16 MP decode budget.')
+        label = imdef.get('name') or f'Image {tex["source"] + 1}'
+        with open_texture(data, label) as im:
+            if for_native:
+                return native_thumbnail(im)
+            if im.width*im.height > MAX_SOURCE_PIXELS:
+                raise GarageError(f'“{label}” is {im.width} × {im.height}. Full-resolution pixel inspection is limited to 4096 × 4096 pixels in area.', 'texture_size')
             return im.convert('RGBA')
 
     def source_image(self,mat):
         color=mat['color'];texture=mat['base_texture']
         if texture is None:return Image.new('RGBA',(4,4),tuple(srgb(color[:3]).tolist())+(int(round(color[3]*255)),))
-        image = self.embedded_image(texture)
-        image.thumbnail((512,512),Image.Resampling.LANCZOS)
+        image = self.embedded_image(texture, for_native=True)
         # glTF uses factor multiplication in linear colour, not in sRGB bytes.
         pixels=np.asarray(image,dtype=float)/255;rgb=np.where(pixels[:,:,:3]<=.04045,pixels[:,:,:3]/12.92,((pixels[:,:,:3]+.055)/1.055)**2.4)
         pixels[:,:,:3]=srgb(rgb*np.asarray(color[:3]))/255;pixels[:,:,3]*=color[3];image=Image.fromarray(np.round(pixels*255).astype(np.uint8))
