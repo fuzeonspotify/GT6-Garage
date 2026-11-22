@@ -47,7 +47,7 @@ The default stock export preserves the stock wheel shop. The optional extended w
 
 ## Credits and community
 
-To our knowledge, **fuzeonspotify**, the creator of GT6 Garage, was the first to import a custom 3D car model into **Gran Turismo 6** as a driveable car.
+I’m **FuzeXO**, the creator of GT6 Garage. I was the first to import a custom 3D car model into **Gran Turismo 6** as a driveable car.
 
 Thank you to **Willyham**, **Diego**, and **Glitcher101GamingYT** for helping verify PS3 compatibility and testing custom cars on both PC and PS3.
 
