@@ -8,6 +8,7 @@ history.replaceState(null, '', location.pathname);
 let results = [], busy = false;
 Help.mount(document);
 $('showTroubleshooting').onclick=()=>$('troubleshootingTitle').focus();
+$('showTroubleshooting').disabled=false;
 
 async function api(path, data, file) {
   const headers = {'X-Garage-Token':token};
