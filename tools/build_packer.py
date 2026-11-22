@@ -27,6 +27,8 @@ def main():
         subprocess.run(['dotnet', 'publish', str(src / 'GTToolsSharp/GTToolsSharp.csproj'),
                         '-c', 'Release', '-r', 'win-x64', '--self-contained', 'true',
                         '-o', str(build), '-p:PublishSingleFile=true', '-p:IncludeNativeLibrariesForSelfExtract=true',
+                        '-p:DebugType=None', '-p:DebugSymbols=false', '-p:Deterministic=true',
+                        f'-p:PathMap={src}=/_/src',
                         '-p:EnableCompressionInSingleFile=true', '-m:2', '-nr:false'], check=True)
         exe = build / 'GTToolsSharp.exe'
         digest = hashlib.sha256(exe.read_bytes()).hexdigest()

@@ -30,7 +30,7 @@ Install Git and the **.NET 9 SDK**. From the repository root, run the following.
 .\.venv\Scripts\python tools/build_packer.py
 ```
 
-Alternatively, copy **Support/GTToolsSharp/** from the matching official Garage Windows release into the source checkout. Its reviewed executable SHA-256 is **7d89b679b48d26a56b23f3fb06de6271d1fb125970ee231ba7c4c7c20581f500**.
+Alternatively, copy **Support/GTToolsSharp/** from the matching official Garage Windows release into the source checkout. Garage verifies the executable against its [pinned SHA-256](../garagehub/packer_build_id.py).
 
 ## Run the checks
 
@@ -66,7 +66,7 @@ To package the desktop application and extension together, run the Windows build
 .\.venv\Scripts\python tools/build_windows.py
 ```
 
-The ZIP and SHA-256 file appear under **dist/**. Packaging uses the player entry point and an explicit set of sources and notices. Its public distribution contains neither the starting mod pack nor the game-native donor. The previous friends ZIP has a different content and licensing boundary. Create release archives in a clean checkout and use a new player workspace for testing.
+The ZIP and SHA-256 file appear under **dist/**. The packer build omits debugging symbols and maps its build directory to a neutral path. Before writing the ZIP, the Windows builder checks the staged files, nested archives and both executables for private account files and local build paths. Keep player profiles, test models, game files and logs outside the release checkout.
 
 ## Where to work
 

@@ -73,8 +73,17 @@ class App:
             current=self.config.get(key)
             if key == 'car_baseline' and self.included_baseline is None:
                 continue
-            if (current and Path(current).exists()) or not path.exists():
+            if not path.exists():
                 continue
+            if current and Path(current).exists():
+                if key != 'car_packer' or Path(current).resolve() == path.resolve():
+                    continue
+                try:
+                    check(Path(current))
+                    continue
+                except (GarageError, OSError, ValueError):
+                    # An older installation may have recorded the previous bundled packer.
+                    pass
             try:
                 if key != 'car_baseline':
                     check(path)

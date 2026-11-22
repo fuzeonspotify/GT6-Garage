@@ -15,6 +15,7 @@ sys.path.insert(0, str(ROOT))
 from garagehub import __version__
 from garagehub.car_pack import trusted_packer
 from tools.build_blender_addon import FILENAME as ADDON_FILENAME, package_addon
+from tools.release_privacy import check_release_tree
 
 
 def package(frozen, packer, output):
@@ -53,6 +54,7 @@ def package(frozen, packer, output):
                 url = f'https://github.com/fuzeonspotify/GT6-Garage/{view}/v{__version__}/'
                 return '](' + url + repository_path.relative_to(ROOT).as_posix() + anchor + ')'
             guide.write_text(re.sub(r'\]\(([^)]+)\)', public_link, guide.read_text(encoding='utf-8')), encoding='utf-8')
+        check_release_tree(app, ROOT)
         archive = folder / 'public.zip'
         forbidden = {'gt.vol', 'db0106.dat', 'eboot.bin', 'rpcs3.exe', 'param.sfo', 'key.json',
                      'settings.json', 'session.json', 'carname.dat', 'body_s', 'wheel', 'body', 'interior'}
