@@ -279,6 +279,35 @@ def _exterior_optic(scene, row, project, rotation, longitudinal_bounds):
     return None
 
 
+def _possible_lenses(scene, project, coverage, rotation, bounds, end):
+    """Show localized optical details for manual inspection without changing their roles."""
+    included={p['id']:p['role'] for p in coverage if p['disposition']=='emit'}
+    low,high=bounds
+    possible=[]
+    for part in scene.parts:
+        if (included.get(part.id) not in ('glass','body') or part.id in project.get('overrides',{})
+                or part.extras.get('gt6_role')):
+            continue
+        mat=scene.materials[part.material]
+        name=part.name+' '+mat['name']
+        if stationary_part_role(part.name,mat['name']):
+            continue
+        z=np.sort(part.bounds@rotation[2])
+        if (end=='rear' and z[0]<high-.25*(high-low)) or (end=='front' and z[1]>low+.25*(high-low)):
+            continue
+        red,green,blue=mat['color'][:3]
+        if end=='rear' and red>.1 and red>3*max(green,blue) and re.search(r'glass|lens',name,re.I):
+            reason='Red lens material at the rear. Check whether these faces are a cover or an emitter.'
+            rank=0
+        elif re.search(r'(?:light|lamp)[ _.\-]*(?:cluster|refract|lens|bulb)|projector[ _.\-]*lens',name,re.I):
+            reason='Optical detail at this end. It may share a mesh with another lamp function.'
+            rank=1
+        else:
+            continue
+        possible.append((rank,{'id':part.id,'name':part.name,'material':mat['name'],'reason':reason}))
+    return [row for _,row in sorted(possible,key=lambda entry:entry[0])[:8]]
+
+
 def _find_placement(scene, coverage, rotation, wheels, gear, placement, native_root):
     """Search small uniform corrections to the wheelbase fit before proposing edits."""
     from .template_shell_preview import decode_template_wheels
@@ -425,6 +454,9 @@ def suggest_setup(scene, project, sizing, *, template_root=None):
                 lighting_report[end].update(origin='review',message=str(exc))
     else:
         settings['lighting'] = {'mode':'source'}
+    for end,entry in lighting_report.items():
+        if entry['origin']!='model':
+            entry['candidates']=_possible_lenses(scene,project,coverage,rotation,longitudinal_bounds,end)
     changes = {'template_shell_settings': normalize_shell_settings(settings), 'overrides': overrides}
     setup = {'id': project['id'], 'sizing': sizing, 'changes': changes, 'exclusions': exclusions, 'optics':optics,
              'finishes': finishes, 'fit': fit, 'notes': notes,'lights':lighting_report}

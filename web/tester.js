@@ -94,6 +94,15 @@ function renderRow(row) {
         repairs.append(row.project_id?button(label,()=>openWorkshop(part.id)):element('span',label));
         if(part.reason)repairs.append(element('small',part.reason,'detail'));
       }
+      if(lights.candidates?.length){
+        const possible=element('details');
+        possible.append(element('summary','Review possible '+end+' lenses'));
+        for(const part of lights.candidates){
+          const label=part.material+' · '+part.name;
+          possible.append(row.project_id?button(label,()=>openWorkshop(part.id)):element('span',label),element('p',part.reason));
+        }
+        repairs.append(possible);
+      }
     }
     if(row.lamp_mount_checks?.hq?.passed&&row.lamp_mount_checks?.race?.passed){
       const mm=Math.max(...['hq','race'].map(lod=>row.lamp_mount_checks[lod].maximum_surface_shift_metres))*1000;

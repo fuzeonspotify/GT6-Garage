@@ -7,6 +7,8 @@
 
 ## When a light is missing or the wrong part lights up
 
+If the car has rear lights but Garage offers a supplied pair, expand **Review possible rear lenses** in the test result. Select a candidate to see its actual faces in **Parts**. Red glass can cover a running light, a reflector, or several functions together. Assign **Taillight** only to the faces you want to glow, then run **Check wheels, lights & parts** again. The same candidate list is available for an uncertain front end.
+
 In **Car workshop**, select the emitting lens in **Parts**. Assign **Headlight**, **Taillight** (running and brake) or **Brake light** (a separate stop lamp). Leave a housing as **Body detail** and a clear cover as **Glass**. Run the setup and preview again. If several different functions share a single mesh and material, split their faces in Blender before assigning roles. Explicit Blender role tags and saved part choices take priority over suggestions.
 
 Garage reads component and material names. It can also match separate left and right light clusters with similar size, position, material and colour. Police light bars, indicators, fog and reverse lights can remain visible as model details. The current game profile provides working headlamps, rear running lamps and brake lamps. A one-sided headlight or a brake-only rear assignment stays flagged so you can identify the missing lens.

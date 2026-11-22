@@ -275,6 +275,9 @@ def run_check(job, profile, web):
             for part in lamps['parts']:
                 findings.append(dict(level='info',material=part['material'],object=part['name'],
                                      message=end.capitalize()+' light — '+part['reason']+'.'))
+            for part in lamps.get('candidates',[]):
+                findings.append(dict(level='info',material=part['material'],object=part['name'],
+                                     message='Possible '+end+' lens — '+part['reason']))
         if row['status']=='needs_attention':
             messages = row.get('messages') or ['Inspect this model in Car workshop.']
             codes = row.get('blocker_codes') or [row.get('code')] * len(messages)

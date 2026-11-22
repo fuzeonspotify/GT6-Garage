@@ -164,6 +164,26 @@ class TemplateLightsTests(unittest.TestCase):
                 self.assertEqual(review['lamp_mount_checks']['race']['centres_checked'],2)
                 self.assertEqual(supplied_review(scene,project,dispositions=excluded)['blockers'][0]['code'],'shell_lamps')
 
+    def test_uncertain_rear_lens_is_linked_for_review_without_overriding_a_choice(self):
+        from .shell_setup import suggest_setup
+        scene, project = shell_fixture()
+        lens = scene.parts[3]
+        lens.name = 'Rear lens cover'
+        lens.extras = {}
+        scene.materials[lens.material]['name'] = 'Ruby glass'
+        project.update(assembly_mode='template_shell', inspection=infer(scene))
+        setup = suggest_setup(scene, project, 'keep_size')
+        self.assertEqual(setup['changes']['template_shell_settings']['lighting']['mode'], 'supplied_rear')
+        rear = setup['lights']['rear']
+        self.assertEqual(rear['parts'], [])
+        self.assertEqual([(part['id'], part['material']) for part in rear['candidates']], [(lens.id, 'Ruby glass')])
+        self.assertNotIn(lens.id, setup['changes']['overrides'])
+        for override, tags in [({lens.id: {'role': 'glass'}}, {}), ({}, {'gt6_role': 'glass'})]:
+            with self.subTest(override=override, tags=tags):
+                lens.extras = tags
+                project.update(overrides=override, inspection=infer(scene, '+Z', override))
+                self.assertEqual(suggest_setup(scene, project, 'keep_size')['lights']['rear']['candidates'], [])
+
     def test_one_sided_authored_headlight_reaches_parts_review(self):
         from .shell_setup import suggest_setup
         scene,project=shell_fixture()
