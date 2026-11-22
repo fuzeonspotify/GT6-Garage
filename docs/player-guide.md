@@ -44,7 +44,16 @@ The new-player FTP route does not require copying GT.VOL, a disc image, or the f
 
 ## 4. Install and test
 
-1. Close GT6. Keep a restorable copy of the current update or its complete known-good mod package, plus your save. The five setup inputs alone are insufficient to roll back an arbitrary existing mod pack.
+### Back up your GT6 save
+
+We recommend making a separate copy of your game save before installing a custom car. That copy lets you restore your garage and career progress if your save is lost or corrupted.
+
+- **RPCS3 on PC.** Stop GT6, open RPCS3’s save manager, right-click your Gran Turismo 6 save and choose **Open Save Directory**. Copy the entire save folder to your backup drive. [RPCS3 save manager](https://github.com/RPCS3/rpcs3/blob/master/rpcs3/rpcs3qt/save_manager_dialog.cpp)
+- **PS3.** Quit GT6 and connect a USB drive. On the PS3 home screen, open **Game → Saved Data Utility (PS3)**, highlight your Gran Turismo 6 save, press **Triangle**, and choose **Copy**. Select the USB drive and wait for the copy to finish. [PlayStation save backup instructions](https://manuals.playstation.net/document/en/ps3/current/game/copysavedata.html)
+
+### Install the car
+
+1. Close GT6. Alongside your save backup, keep a restorable copy of the current update or its complete known-good mod package. The five setup inputs alone are insufficient to roll back an arbitrary existing mod pack.
 2. Extract **your generated car ZIP** and open its **Install** folder on the PC. On RPCS3, copy the contents into the local **PDIPFS** folder you found in step 1. On PS3, upload the contents into `/dev_hdd0/game/<TITLE_ID>/USRDIR/PDIPFS/` for the matching title ID. Preserve the directories on both platforms.
 3. Send all payload files first. After every transfer succeeds, send **K/4D last**. If a transfer fails, leave the previous header active and finish verifying the payload before switching headers.
 4. Start the game. Find the car by its chosen name, check it in the garage, then drive a **single-player race**. In a replay check four tyres and rims at low and high speed, the driver, glass and lights. Save, exit the game completely, reopen it, and check the car again.

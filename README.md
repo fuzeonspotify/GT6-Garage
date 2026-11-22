@@ -6,6 +6,8 @@ Bring a 3D car model into **Gran Turismo 6** as a driveable exterior. Fit the bo
 
 Extract the whole Windows x64 ZIP and open **GT6Garage.exe**. The workshop opens in your browser. Both installation guides use GT6 update **1.22**. The first-time PS3 FTP wizard and car ZIPs in Garage 0.4.16 use the tested title ID `BCES01893`. Before installing, check that the ID at the top of `README_INSTALL.txt` in your generated car ZIP matches your copy of GT6.
 
+**We recommend backing up your GT6 game save before installing a custom car.** Keep a copy on a separate drive so you can restore your garage and career progress if your save is lost or corrupted. [How to back up your save on RPCS3 or PS3](docs/player-guide.md#back-up-your-gt6-save)
+
 ## RPCS3 on PC
 
 1. **Find your update folder.** In RPCS3, right-click **Gran Turismo 6** and choose **Open Folder → Open Game Data Folder**. Open `USRDIR/PDIPFS`. This is the local folder you’ll use for setup and installation.
@@ -42,6 +44,14 @@ To keep your first custom car when adding a second one, choose **Keep this combi
 | Game changes | The exported ZIP overlays the update. Separate entries get their own identity, model namespace and names. Installing over unrelated mods requires a build made for that combination. |
 
 The default stock export preserves the stock wheel shop. The optional extended wheel-shop implementation from the earlier three-car build is included as source with its exact prerequisites. [Wheel-shop details](docs/how-it-works.md#wheel-shop-sizes)
+
+## Credits and community
+
+To our knowledge, **fuzeonspotify**, the creator of GT6 Garage, was the first to import a custom 3D car model into **Gran Turismo 6** as a driveable car.
+
+Thank you to **Willyham**, **Diego**, and **Glitcher101GamingYT** for helping verify PS3 compatibility and testing custom cars on both PC and PS3.
+
+**Discord: Coming soon.** We’d love your feedback and feature requests when the server opens.
 
 ## Learn or contribute
 
